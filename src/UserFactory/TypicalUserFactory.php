@@ -25,8 +25,8 @@ class TypicalUserFactory implements UserFactory
         'login' => 'USR_LOGIN',
         'first_name' => 'USR_FIRST_NAME',
         'last_name' => 'USR_LAST_NAME',
-        'email' => 'USR_MOBILE',
-        'phone' => 'USR_EMAIL',
+        'phone' => 'USR_MOBILE',
+        'email' => 'USR_EMAIL',
         'chief_email' => 'MANAGER_EMAIL',
         'status' => 'USR_UDF_USER_FIRED',
         'groups.region' => 'REGION_NAME',
@@ -132,7 +132,7 @@ class TypicalUserFactory implements UserFactory
     /**
      * @var string
      */
-    private $activeStatus = '0';
+    private $activeStatus = self::USER_ACTIVE;
 
     /**
      * TypicalUserFactory constructor.
@@ -141,7 +141,7 @@ class TypicalUserFactory implements UserFactory
     public function __construct(array $options = [])
     {
         if(isset($options['attributes'])) {
-            $this->attributes = $options['attributes'];
+            $this->attributes = array_merge($this->attributes, $options['attributes']);
         }
 
         if(isset($options['forms'])) {
@@ -242,9 +242,10 @@ class TypicalUserFactory implements UserFactory
                 $user = ($this->beforeBuild)($index, $user);
             }
 
-            if(!$user) {
+            if(!$user || !is_array($user)) {
                 continue;
             }
+
             $data[] = $this->buildUser($index, $user);
         }
 
@@ -316,7 +317,7 @@ class TypicalUserFactory implements UserFactory
                 $forms = ($this->buildForms)($index, $user, $forms);
             } else {
                 foreach ($this->forms as $id => $form) {
-                    $forms[$id] = $user[$form] ?? self::DEFAULT_FORM_VALUE;
+                    $forms[(string) $id] = $user[$form] ?? self::DEFAULT_FORM_VALUE;
                 }
             }
 
@@ -398,30 +399,7 @@ class TypicalUserFactory implements UserFactory
             return null;
         }
 
-        $phone = (string) preg_replace('/[^0-9]/', '', $phone);
-        if (empty($phone)) {
-            return null;
-        }
-
-        $symbols = strlen($phone);
-        if($symbols === 10) {
-            $first = $phone[0];
-            if($first === '9') {
-                return  '7' . $phone;
-            }
-
-            return $phone;
-        }
-
-        if($symbols === 11) {
-            $first = $phone[0];
-            if($first === '8') {
-                return  substr_replace($phone, '7', 0, 1);
-            }
-            return $phone;
-        }
-
-        return $phone;
+        return PhoneBuilder::build($phone);
     }
 
     /**

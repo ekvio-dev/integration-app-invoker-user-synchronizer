@@ -90,35 +90,49 @@ class TypicalUserValidator implements UserValidator
      */
     protected function validateUser(int $index, array $user): void
     {
-        $isValid = true;
-        $isValid = $this->loginValidator
+        $results[] = $this->loginValidator
             ? (bool)($this->loginValidator)($index, $user, $this->validationCollector)
             : $this->isValidLogin($index, $user);
 
 
-        $isValid = $this->firstNameValidator
+        $results[] = $this->firstNameValidator
             ? (bool)($this->firstNameValidator)($index, $user, $this->validationCollector)
             : $this->isValidFirstName($index, $user);
 
-        $isValid = $this->lastNameValidator
+        $results[] = $this->lastNameValidator
             ? (bool)($this->lastNameValidator)($index, $user, $this->validationCollector)
             : $this->isValidLastName($index, $user);
 
-        $isValid = $this->phoneValidator
+        $results[] = $this->phoneValidator
             ? (bool)($this->phoneValidator)($index, $user, $this->validationCollector)
             : $this->isValidPhone($index, $user);
 
-        $isValid = $this->emailValidator
+        $results[] = $this->emailValidator
             ? (bool)($this->emailValidator)($index, $user, $this->validationCollector)
             : $this->isValidEmail($index, $user);
 
-        $isValid = $this->groupsValidator
-            ? (bool)($this->groupsValidator)($index, $user, $this->groupsValidator)
+        $results[] = $this->groupsValidator
+            ? (bool)($this->groupsValidator)($index, $user, $this->validationCollector)
             : $this->isValidGroups($index, $user);
 
-        if($isValid) {
+        if($this->isValid($results)) {
             $this->validationCollector->addValid($user);
         }
+    }
+
+    /**
+     * @param array $results
+     * @return bool
+     */
+    protected function isValid(array $results): bool
+    {
+        foreach ($results as $result) {
+            if($result === false) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**
@@ -201,7 +215,7 @@ class TypicalUserValidator implements UserValidator
             return false;
         }
 
-        $length = strlen($phone, 'UTF-8');
+        $length = strlen($phone);
         if ($length < 10) {
             $this->validationCollector->addError($index, $login, $key, 'Phone number must be min 10 numbers');
             return false;

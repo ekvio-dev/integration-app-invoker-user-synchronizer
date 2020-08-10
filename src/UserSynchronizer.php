@@ -44,6 +44,15 @@ class UserSynchronizer implements Invoker
      */
     private $profiler;
 
+    /**
+     * UserSynchronizer constructor.
+     * @param Extractor $userExtractor
+     * @param FilesystemInterface $fs
+     * @param UserFactory $userFactory
+     * @param UserValidator $validator
+     * @param UserSync $userSync
+     * @param Profiler $profiler
+     */
     public function __construct(
         Extractor $userExtractor,
         FilesystemInterface $fs,
