@@ -9,8 +9,6 @@ use Ekvio\Integration\Contracts\Profiler;
 use Ekvio\Integration\Invoker\UserFactory\UserFactory;
 use Ekvio\Integration\Invoker\UserValidation\UserValidator;
 use Ekvio\Integration\Sdk\V2\User\UserSync;
-use League\Flysystem\FilesystemInterface;
-use RuntimeException;
 
 /**
  * Class UserSynchronizer
@@ -23,10 +21,6 @@ class UserSynchronizer implements Invoker
      * @var Extractor
      */
     private $userExtractor;
-    /**
-     * @var FilesystemInterface
-     */
-    private $fs;
     /**
      * @var UserFactory
      */
@@ -47,7 +41,6 @@ class UserSynchronizer implements Invoker
     /**
      * UserSynchronizer constructor.
      * @param Extractor $userExtractor
-     * @param FilesystemInterface $fs
      * @param UserFactory $userFactory
      * @param UserValidator $validator
      * @param UserSync $userSync
@@ -55,14 +48,12 @@ class UserSynchronizer implements Invoker
      */
     public function __construct(
         Extractor $userExtractor,
-        FilesystemInterface $fs,
         UserFactory $userFactory,
         UserValidator $validator,
         UserSync $userSync,
         Profiler $profiler)
     {
         $this->userExtractor = $userExtractor;
-        $this->fs = $fs;
         $this->userFactory = $userFactory;
         $this->validator = $validator;
         $this->equeoUserApi = $userSync;
@@ -71,10 +62,8 @@ class UserSynchronizer implements Invoker
     /**
      * @inheritDoc
      */
-    public function __invoke(array $parameters = []): void
+    public function __invoke(array $arguments = [])
     {
-        $sync = $parameters['sync'];
-
         $this->profiler->profile('Extract users...');
         $users = $this->userExtractor->extract();
         $this->profiler->profile(sprintf('Extracted %s users...', count($users)));
@@ -99,12 +88,7 @@ class UserSynchronizer implements Invoker
             $this->profiler->profile(sprintf('Get %s user logs...', count($syncResult)));
         }
 
-        $dataCollector = array_merge($errors, $syncResult);
-
-        $this->profiler->profile(sprintf('Saving sync result to %s', $errors));
-        if($this->fs->put($sync, json_encode($dataCollector)) === false) {
-            throw new RuntimeException(sprintf('Failed saving file %s', $errors));
-        }
+        return array_merge($errors, $syncResult);
     }
 
     /**

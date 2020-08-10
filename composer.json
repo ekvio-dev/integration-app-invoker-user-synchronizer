@@ -12,8 +12,7 @@
   "license": "MIT",
   "require": {
     "ext-json": "*",
-    "league/flysystem": "^1.0",
-    "ekvio-dev/integration-app-contracts": "^1",
+    "ekvio-dev/integration-app-contracts": "^2",
     "ekvio-dev/integration-php-sdk": "^0"
   },
   "autoload": {
