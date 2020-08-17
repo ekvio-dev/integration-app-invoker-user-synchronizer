@@ -135,6 +135,11 @@ class TypicalUserFactory implements UserFactory
     private $activeStatus = self::USER_ACTIVE;
 
     /**
+     * @var bool
+     */
+    private $useGroupDefaults = true;
+
+    /**
      * TypicalUserFactory constructor.
      * @param array $options
      */
@@ -226,6 +231,10 @@ class TypicalUserFactory implements UserFactory
 
         if(isset($options['activeStatus'])) {
             $this->activeStatus = (string) $options['activeStatus'];
+        }
+
+        if(isset($options['useGroupDefaults'])) {
+            $this->useGroupDefaults = (bool) $options['useGroupDefaults'];
         }
     }
 
@@ -450,15 +459,19 @@ class TypicalUserFactory implements UserFactory
      * @param string $key
      * @param int $index
      * @param array $user
-     * @return string
+     * @return null|string
      */
-    protected function buildGroup(string $key, int $index, array $user): string
+    protected function buildGroup(string $key, int $index, array $user): ?string
     {
-        $group = $user[$this->attributes[$key]];
+        $group = $user[$this->attributes[$key]] ?? null;
         if($group) {
             return trim($group);
         }
 
-        return $this->groupDefaults[$key];
+        if($this->useGroupDefaults) {
+            return $this->groupDefaults[$key];
+        }
+
+        return null;
     }
 }

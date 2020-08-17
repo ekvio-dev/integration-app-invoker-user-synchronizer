@@ -255,4 +255,94 @@ class TypicalUserFactoryTest extends TestCase
         $users = $factory->build([$user]);
         $this->assertEquals([], $users);
     }
+
+    public function testBuildUserWithDefaultGroups()
+    {
+        $users = [
+            [
+                'USR_LOGIN' => 'test',
+                'USR_FIRST_NAME' => 'ivan',
+                'USR_LAST_NAME' => 'ivanov',
+                'USR_MOBILE' => '89275000000',
+                'USR_EMAIL' => 'test@test.dev',
+                'MANAGER_EMAIL' => 'manager@test.dev',
+                'USR_UDF_USER_FIRED' => '0',
+                'REGION_NAME' => '',
+                'CITY_NAME' => null,
+                'ROLE' => '',
+                'POSITION_NAME' => null,
+                'TEAM_NAME' => '',
+                'DEPARTAMENT_NAME' => '',
+                'ASSIGNMENT_NAME' => null,
+            ]
+        ];
+
+        $factory = new TypicalUserFactory();
+        $users = $factory->build($users);
+        $this->assertEquals([
+            'login' => 'test',
+            'first_name' => 'ivan',
+            'last_name' => 'ivanov',
+            'phone' => '79275000000',
+            'email' => 'test@test.dev',
+            'verified_email' => true,
+            'verified_phone' => true,
+            'chief_email' => 'manager@test.dev',
+            'status' => 'active',
+            'groups' => [
+                'region' => 'Demo region',
+                'city' => 'Demo city',
+                'role' => 'Demo role',
+                'position' => 'Demo position',
+                'team' => 'Demo team',
+                'department' => 'Demo department',
+                'assignment' => 'Demo assignment',
+            ]
+        ], $users[0]);
+    }
+
+    public function testBuildUserWithoutDefaultGroups()
+    {
+        $users = [
+            [
+                'USR_LOGIN' => 'test',
+                'USR_FIRST_NAME' => 'ivan',
+                'USR_LAST_NAME' => 'ivanov',
+                'USR_MOBILE' => '89275000000',
+                'USR_EMAIL' => 'test@test.dev',
+                'MANAGER_EMAIL' => 'manager@test.dev',
+                'USR_UDF_USER_FIRED' => '0',
+                'REGION_NAME' => '',
+                'CITY_NAME' => null,
+                'ROLE' => '',
+                'POSITION_NAME' => null,
+                'TEAM_NAME' => '',
+                'DEPARTAMENT_NAME' => '',
+                'ASSIGNMENT_NAME' => null,
+            ]
+        ];
+
+        $factory = new TypicalUserFactory(['useGroupDefaults' => false]);
+        $users = $factory->build($users);
+        $this->assertEquals([
+            'login' => 'test',
+            'first_name' => 'ivan',
+            'last_name' => 'ivanov',
+            'phone' => '79275000000',
+            'email' => 'test@test.dev',
+            'verified_email' => true,
+            'verified_phone' => true,
+            'chief_email' => 'manager@test.dev',
+            'status' => 'active',
+            'groups' => [
+                'region' => null,
+                'city' => null,
+                'role' => null,
+                'position' => null,
+                'team' => null,
+                'department' => null,
+                'assignment' => null,
+            ]
+        ], $users[0]);
+    }
 }
