@@ -18,10 +18,6 @@ class UserSynchronizer implements Invoker
 {
     private const NAME = 'Synchronize users';
     /**
-     * @var Extractor
-     */
-    private $userExtractor;
-    /**
      * @var UserFactory
      */
     private $userFactory;
@@ -47,13 +43,11 @@ class UserSynchronizer implements Invoker
      * @param Profiler $profiler
      */
     public function __construct(
-        Extractor $userExtractor,
         UserFactory $userFactory,
         UserValidator $validator,
         UserSync $userSync,
         Profiler $profiler)
     {
-        $this->userExtractor = $userExtractor;
         $this->userFactory = $userFactory;
         $this->validator = $validator;
         $this->equeoUserApi = $userSync;
@@ -64,9 +58,7 @@ class UserSynchronizer implements Invoker
      */
     public function __invoke(array $arguments = [])
     {
-        $this->profiler->profile('Extract users...');
-        $users = $this->userExtractor->extract();
-        $this->profiler->profile(sprintf('Extracted %s users...', count($users)));
+        $users = [];
 
         $this->profiler->profile('Building users from extracted data');
         $users = $this->userFactory->build($users);
