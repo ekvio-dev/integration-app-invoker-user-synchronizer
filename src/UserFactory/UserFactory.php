@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 namespace Ekvio\Integration\Invoker\UserFactory;
 
+use Ekvio\Integration\Contracts\User\UserPipelineData;
+
 /**
  * Interface UserFactory
  * @package App
@@ -10,8 +12,8 @@ namespace Ekvio\Integration\Invoker\UserFactory;
 interface UserFactory
 {
     /**
-     * @param array $users
-     * @return array
+     * @param UserPipelineData $data
+     * @return UserPipelineData
      */
-    public function build(array $users): array;
+    public function build(UserPipelineData $data): UserPipelineData;
 }

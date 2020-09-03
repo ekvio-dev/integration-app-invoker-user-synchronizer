@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 namespace Ekvio\Integration\Invoker\UserValidation;
 
+use Ekvio\Integration\Contracts\User\UserPipelineData;
+
 /**
  * Interface UserValidator
  * @package App
@@ -10,8 +12,8 @@ namespace Ekvio\Integration\Invoker\UserValidation;
 interface UserValidator
 {
     /**
-     * @param array $users
-     * @return UserValidationCollector
+     * @param UserPipelineData $users
+     * @return UserPipelineData
      */
-    public function validate(array $users): UserValidationCollector;
+    public function validate(UserPipelineData $users): UserPipelineData;
 }

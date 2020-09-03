@@ -12,7 +12,7 @@
   "license": "MIT",
   "require": {
     "ext-json": "*",
-    "ekvio-dev/integration-app-contracts": "^2",
+    "ekvio-dev/integration-app-contracts": "^3",
     "ekvio-dev/integration-php-sdk": "^0"
   },
   "autoload": {

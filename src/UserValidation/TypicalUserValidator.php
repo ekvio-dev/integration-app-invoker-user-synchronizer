@@ -3,6 +3,10 @@ declare(strict_types=1);
 
 namespace Ekvio\Integration\Invoker\UserValidation;
 
+use Ekvio\Integration\Contracts\User\UserData;
+use Ekvio\Integration\Contracts\User\UserPipelineData;
+use Ekvio\Integration\Invoker\UserSyncPipelineData;
+
 /**
  * Class TypicalUserValidator
  * @package Ekvio\Integration\Invoker\UserValidation
@@ -18,6 +22,14 @@ class TypicalUserValidator implements UserValidator
      * @var callable
      */
     private $loginValidator;
+    /**
+     * @var array
+     */
+    private $loginCollection = [];
+    /**
+     * @var callable
+     */
+    private $loginCollectionValidator;
     /**
      * @var callable
      */
@@ -45,6 +57,10 @@ class TypicalUserValidator implements UserValidator
      */
     public function __construct(array $options = [])
     {
+        if(isset($options['loginCollectionValidator']) && is_callable($options['loginCollectionValidator'])) {
+            $this->loginCollectionValidator = $options['loginCollectionValidator'];
+        }
+
         if(isset($options['loginValidator']) && is_callable($options['loginValidator'])) {
             $this->loginValidator = $options['loginValidator'];
         }
@@ -69,31 +85,44 @@ class TypicalUserValidator implements UserValidator
             $this->groupsValidator = $options['groupsValidator'];
         }
     }
+
     /**
-     * @param array $users
-     * @return UserValidationCollector
+     * @param UserPipelineData $pipelineData
+     * @return UserSyncPipelineData
      */
-    public function validate(array $users): UserValidationCollector
+    public function validate(UserPipelineData $pipelineData): UserPipelineData
     {
+        $this->loginCollection = [];
         $this->validationCollector = new UserValidationCollector();
 
-        foreach ($users as $index => $user) {
-            $this->validateUser($index, $user);
+        foreach ($pipelineData->data() as $userData) {
+            $this->validateUser($userData);
         }
 
-        return $this->validationCollector;
+        $pipelineData = $pipelineData->change($this->validationCollector->valid());
+
+        foreach ($this->validationCollector->errors() as $error) {
+            $pipelineData->addLog($error);
+        }
+
+        return $pipelineData;
     }
 
     /**
-     * @param int $index
-     * @param array $user
+     * @param UserData $userData
      */
-    protected function validateUser(int $index, array $user): void
+    protected function validateUser(UserData $userData): void
     {
+        $index = $userData->key();
+        $user = $userData->data();
+
         $results[] = $this->loginValidator
             ? (bool)($this->loginValidator)($index, $user, $this->validationCollector)
             : $this->isValidLogin($index, $user);
 
+        $results[] = $this->loginCollectionValidator
+            ? (bool) ($this->loginCollectionValidator)($index, $user, $this->loginCollection)
+            : $this->isLoginExist($index, $user);
 
         $results[] = $this->firstNameValidator
             ? (bool)($this->firstNameValidator)($index, $user, $this->validationCollector)
@@ -116,7 +145,8 @@ class TypicalUserValidator implements UserValidator
             : $this->isValidGroups($index, $user);
 
         if($this->isValid($results)) {
-            $this->validationCollector->addValid($user);
+            $this->validationCollector->addValid($userData);
+            $this->loginCollection[] = $user['login'];
         }
     }
 
@@ -136,11 +166,11 @@ class TypicalUserValidator implements UserValidator
     }
 
     /**
-     * @param int $index
+     * @param string $index
      * @param array $user
      * @return bool
      */
-    protected function isValidLogin(int $index, array $user): bool
+    protected function isValidLogin(string $index, array $user): bool
     {
         if(empty($user['login'])) {
             $this->validationCollector->addError($index, null, 'login', 'Login required');
@@ -150,12 +180,28 @@ class TypicalUserValidator implements UserValidator
         return true;
     }
 
+
     /**
-     * @param int $index
+     * @param string $index
      * @param array $user
      * @return bool
      */
-    protected function isValidFirstName(int $index, array $user): bool
+    protected function isLoginExist(string $index, array $user): bool
+    {
+        if(!empty($user['login']) && in_array($user['login'], $this->loginCollection, true)) {
+            $this->validationCollector->addError($index, $user['login'], 'login', 'Login already exists');
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * @param string $index
+     * @param array $user
+     * @return bool
+     */
+    protected function isValidFirstName(string $index, array $user): bool
     {
         $key = 'first_name';
         $login = $this->getLogin($user);
@@ -173,11 +219,11 @@ class TypicalUserValidator implements UserValidator
     }
 
     /**
-     * @param int $index
+     * @param string $index
      * @param array $user
      * @return bool
      */
-    protected function isValidLastName(int $index, array $user): bool
+    protected function isValidLastName(string $index, array $user): bool
     {
         $key = 'last_name';
         $login = $this->getLogin($user);
@@ -195,11 +241,11 @@ class TypicalUserValidator implements UserValidator
     }
 
     /**
-     * @param int $index
+     * @param string $index
      * @param array $user
      * @return bool
      */
-    protected function isValidPhone(int $index, array $user): bool
+    protected function isValidPhone(string $index, array $user): bool
     {
         $key = 'phone';
         $login = $this->getLogin($user);
@@ -230,11 +276,11 @@ class TypicalUserValidator implements UserValidator
     }
 
     /**
-     * @param int $index
+     * @param string $index
      * @param array $user
      * @return bool
      */
-    protected function isValidEmail(int $index, array $user): bool
+    protected function isValidEmail(string $index, array $user): bool
     {
         $key = 'email';
         $login = $this->getLogin($user);
@@ -258,11 +304,11 @@ class TypicalUserValidator implements UserValidator
     }
 
     /**
-     * @param int $index
+     * @param string $index
      * @param array $user
      * @return bool
      */
-    protected function isValidGroups(int $index, array $user): bool
+    protected function isValidGroups(string $index, array $user): bool
     {
         $isGroupValid = true;
         $login = $this->getLogin($user);

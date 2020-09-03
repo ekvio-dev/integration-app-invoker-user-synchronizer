@@ -3,6 +3,10 @@ declare(strict_types=1);
 
 namespace Ekvio\Integration\Invoker\UserFactory;
 
+use Ekvio\Integration\Contracts\User\UserData;
+use Ekvio\Integration\Contracts\User\UserPipelineData;
+use Ekvio\Integration\Invoker\UserSyncData;
+
 /**
  * Class TypicalUserFactory
  * @package App
@@ -239,48 +243,49 @@ class TypicalUserFactory implements UserFactory
     }
 
     /**
-     * @param array $users
-     * @return array
+     * @param UserPipelineData $pipelineData
+     * @return UserPipelineData
      */
-    public function build(array $users): array
+    public function build(UserPipelineData $pipelineData): UserPipelineData
     {
         $data = [];
-        foreach ($users as $index => $user) {
-
+        foreach ($pipelineData->data() as $userData) {
             if($this->beforeBuild) {
-                $user = ($this->beforeBuild)($index, $user);
+                $userData = ($this->beforeBuild)($userData);
             }
 
-            if(!$user || !is_array($user)) {
+            if(!$userData instanceof UserData) {
                 continue;
             }
 
-            $data[] = $this->buildUser($index, $user);
+            $data[] = $this->buildUser($userData);
         }
 
-        return $data;
+        return $pipelineData->change($data);
     }
 
     /**
-     * @param int $index
-     * @param array $user
-     * @return array
+     * @param UserData $userData
+     * @return UserData
      */
-    protected function buildUser(int $index, array $user): array
+    protected function buildUser(UserData $userData): UserData
     {
-        $email = $this->emailBuilder ? ($this->emailBuilder)($index, $user) : $this->buildEmail($index, $user);
-        $phone = $this->phoneBuilder ? ($this->phoneBuilder)($index, $user) : $this->buildPhone($index, $user);
+        $index = $userData->key();
+        $user = $userData->data();
+
+        $email = $this->emailBuilder ? ($this->emailBuilder)($index, $user) : $this->buildEmail($user);
+        $phone = $this->phoneBuilder ? ($this->phoneBuilder)($index, $user) : $this->buildPhone($user);
 
         $data = [
             'login' => $this->loginBuilder
                 ? ($this->loginBuilder)($index, $user)
-                : $this->buildLogin($index, $user),
+                : $this->buildLogin($user),
             'first_name' => $this->firstNameBuilder
                 ? ($this->firstNameBuilder)($index, $user)
-                : $this->buildFirstName($index, $user),
+                : $this->buildFirstName($user),
             'last_name' => $this->lastNameBuilder
                 ? ($this->lastNameBuilder)($index, $user)
-                : $this->buildLastName($index, $user),
+                : $this->buildLastName($user),
             'email' => $email,
             'phone' => $phone,
             'verified_email' => $this->verifiedEmailBuilder
@@ -291,32 +296,32 @@ class TypicalUserFactory implements UserFactory
                 : $this->buildVerifiedPhone($phone),
             'chief_email' => $this->chiefEmailBuilder
                 ? ($this->chiefEmailBuilder)($index, $user)
-                : $this->buildChiefEmail($index, $user),
+                : $this->buildChiefEmail($user),
             'status' => $this->statusBuilder
                 ? ($this->statusBuilder)($index, $user)
-                : $this->buildStatus($index, $user),
+                : $this->buildStatus($user),
             'groups' => [
                 'region' => $this->groupRegionBuilder
                     ? ($this->groupRegionBuilder)($index, $user)
-                    : $this->buildGroup('groups.region',$index, $user),
+                    : $this->buildGroup('groups.region', $user),
                 'city' => $this->groupCityBuilder
                     ? ($this->groupCityBuilder)($index, $user)
-                    : $this->buildGroup('groups.city', $index, $user),
+                    : $this->buildGroup('groups.city', $user),
                 'role' => $this->groupRoleBuilder
                     ? ($this->groupRoleBuilder)($index, $user)
-                    : $this->buildGroup('groups.role', $index, $user),
+                    : $this->buildGroup('groups.role', $user),
                 'position' => $this->groupPositionBuilder
                     ? ($this->groupPositionBuilder)($index, $user)
-                    : $this->buildGroup('groups.position', $index, $user),
+                    : $this->buildGroup('groups.position', $user),
                 'team' => $this->groupTeamBuilder
                     ? ($this->groupTeamBuilder)($index, $user)
-                    : $this->buildGroup('groups.team', $index, $user),
+                    : $this->buildGroup('groups.team', $user),
                 'department' => $this->groupDepartmentBuilder
                     ? ($this->groupDepartmentBuilder)($index, $user)
-                    : $this->buildGroup('groups.department', $index, $user),
+                    : $this->buildGroup('groups.department', $user),
                 'assignment' => $this->groupAssignmentBuilder
                     ? ($this->groupAssignmentBuilder)($index, $user)
-                    : $this->buildGroup('groups.assignment', $index, $user)
+                    : $this->buildGroup('groups.assignment', $user)
             ]
         ];
 
@@ -333,15 +338,14 @@ class TypicalUserFactory implements UserFactory
             $data['forms'] = $forms;
         }
 
-        return $data;
+        return UserSyncData::fromData($index, $data);
     }
 
     /**
-     * @param int $index
      * @param array $user
      * @return string|null
      */
-    protected function buildLogin(int $index, array $user): ?string
+    protected function buildLogin(array $user): ?string
     {
         $login = $user[$this->attributes['login']] ?? null;
         if($login) {
@@ -352,11 +356,10 @@ class TypicalUserFactory implements UserFactory
     }
 
     /**
-     * @param int $index
      * @param array $user
      * @return string|null
      */
-    protected function buildFirstName(int $index, array $user): ?string
+    protected function buildFirstName(array $user): ?string
     {
         $firstName = $user[$this->attributes['first_name']] ?? null;
         if($firstName) {
@@ -367,11 +370,10 @@ class TypicalUserFactory implements UserFactory
     }
 
     /**
-     * @param int $index
      * @param array $user
      * @return string|null
      */
-    protected function buildLastName(int $index, array $user): ?string
+    protected function buildLastName(array $user): ?string
     {
         $lastName = $user[$this->attributes['last_name']] ?? null;
         if($lastName) {
@@ -382,11 +384,10 @@ class TypicalUserFactory implements UserFactory
     }
 
     /**
-     * @param int $index
      * @param array $user
      * @return string|null
      */
-    protected function buildEmail(int $index, array $user): ?string
+    protected function buildEmail(array $user): ?string
     {
         $email = $user[$this->attributes['email']] ?? null;
         if($email) {
@@ -397,11 +398,10 @@ class TypicalUserFactory implements UserFactory
     }
 
     /**
-     * @param int $index
      * @param array $user
      * @return string|null
      */
-    protected function buildPhone(int $index, array $user): ?string
+    protected function buildPhone(array $user): ?string
     {
         $phone = $user[$this->attributes['phone']] ?? null;
         if(!$phone) {
@@ -430,11 +430,10 @@ class TypicalUserFactory implements UserFactory
     }
 
     /**
-     * @param int $index
      * @param array $user
      * @return string|null
      */
-    protected function buildChiefEmail(int $index, array $user): ?string
+    protected function buildChiefEmail(array $user): ?string
     {
         $chiefEmail = $user[$this->attributes['chief_email']] ?? null;
         if($chiefEmail) {
@@ -445,31 +444,29 @@ class TypicalUserFactory implements UserFactory
     }
 
     /**
-     * @param int $index
      * @param array $user
      * @return string
      */
-    protected function buildStatus(int $index, array $user): string
+    protected function buildStatus(array $user): string
     {
         $status = $user[$this->attributes['status']] ?? null;
         return $status === $this->activeStatus ? 'active' : 'blocked';
     }
 
     /**
-     * @param string $key
-     * @param int $index
+     * @param string $type
      * @param array $user
      * @return null|string
      */
-    protected function buildGroup(string $key, int $index, array $user): ?string
+    protected function buildGroup(string $type, array $user): ?string
     {
-        $group = $user[$this->attributes[$key]] ?? null;
+        $group = $user[$this->attributes[$type]] ?? null;
         if($group) {
             return trim($group);
         }
 
         if($this->useGroupDefaults) {
-            return $this->groupDefaults[$key];
+            return $this->groupDefaults[$type];
         }
 
         return null;

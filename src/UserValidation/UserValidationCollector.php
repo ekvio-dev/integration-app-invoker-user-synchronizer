@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 namespace Ekvio\Integration\Invoker\UserValidation;
 
+use Ekvio\Integration\Contracts\User\UserData;
+
 /**
  * Class ValidationResult
  * @package Ekvio\Integration\Invoker\UserValidation
@@ -22,19 +24,20 @@ class UserValidationCollector
     private $errors = [];
 
     /**
-     * @param array $user
+     * @param UserData $user
      */
-    public function addValid(array $user): void
+    public function addValid(UserData $user): void
     {
         $this->valid[] = $user;
     }
+
     /**
-     * @param int $index
+     * @param string $index
      * @param string|null $login
      * @param string $field
      * @param string $message
      */
-    public function addError(int $index, ?string $login, string $field, string $message): void
+    public function addError(string $index, ?string $login, string $field, string $message): void
     {
         if(isset($this->errors[$index])) {
             $this->errors[$index]['errors'][] = [
@@ -59,7 +62,7 @@ class UserValidationCollector
     }
 
     /**
-     * @return array
+     * @return UserData[]
      */
     public function valid(): array
     {
