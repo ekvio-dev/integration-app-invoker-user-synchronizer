@@ -16,7 +16,12 @@ require_once __DIR__ . '/../vendor/autoload.php';
 
 class Extractor1 implements Extractor
 {
-    public const NAME = 'extractor 1';
+    private $name;
+    public function __construct(string $name)
+    {
+        $this->name = $name;
+    }
+
     public function extract(array $options = []): array
     {
         return [
@@ -57,13 +62,18 @@ class Extractor1 implements Extractor
 
     public function name(): string
     {
-        return self::NAME;
+        return $this->name;
     }
 }
 
 class Extractor2 implements Extractor
 {
-    public const NAME = 'extractor 2';
+    private $name;
+    public function __construct(string $name)
+    {
+        $this->name = $name;
+    }
+
     public function extract(array $options = []): array
     {
         return [
@@ -106,7 +116,7 @@ class Extractor2 implements Extractor
 
     public function name(): string
     {
-        return self::NAME;
+        return $this->name;
     }
 }
 
@@ -128,8 +138,10 @@ $httpClient = new Client([
     'verify' => false
 ]);
 
+$prior = 'hr.csv';
+
 (new UserSynchronizer(
-    new ExtractorPriorityCollector(Extractor2::NAME, [new Extractor2(), new Extractor1()]),
+    new ExtractorPriorityCollector($prior, [new Extractor2('hr2.csv'), new Extractor1($prior)]),
     new TypicalUserFactory(),
     new TypicalUserValidator(),
     new User(new EqueoClient($httpClient, new HttpIntegrationResult(), 'http://nginx', '111222')),

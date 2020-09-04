@@ -13,6 +13,7 @@ use RuntimeException;
  */
 class UserSyncPipelineData implements UserPipelineData
 {
+    private const DELIMITER = '___';
     /**
      * @var array
      */
@@ -27,9 +28,9 @@ class UserSyncPipelineData implements UserPipelineData
     private $log = [];
 
     /**
-     * @var callable
+     * @var string
      */
-    private $keyBuilder;
+    private $keyDelimiter;
 
     /**
      * UserSyncPipelineData constructor.
@@ -37,9 +38,7 @@ class UserSyncPipelineData implements UserPipelineData
      */
     public function __construct(array $options = [])
     {
-        if(isset($options['keyBuilder']) && is_callable($options['keyBuilder'])) {
-            $this->keyBuilder = $options['keyBuilder'];
-        }
+        $this->keyDelimiter = $options['keyDelimiter'] ?: self::DELIMITER;
     }
 
     /**
@@ -61,19 +60,25 @@ class UserSyncPipelineData implements UserPipelineData
     }
 
     /**
-     * @param string $key
+     * @param string $name
      * @param array $data
      */
-    public function addSource(string $key, array $data): void
+    public function addSource(string $name, array $data): void
     {
+        $key = substr(md5($name), 0, 6);
+
         if(isset($this->sources[$key])) {
-            throw new RuntimeException(sprintf('Source key %s already exists', $key));
+            throw new RuntimeException(sprintf('Source with name %s already exists', $name));
         }
 
-        $this->sources[$key] = $data;
+        $this->sources[$key] = [
+            'name' => $name,
+            'data' => $data
+        ];
+
         foreach ($data as $index => $value) {
-            $dKey = $this->buildKey($key, $index);
-            $this->data[] = UserSyncData::fromData($dKey, $value);
+            $dataKey = sprintf('%s%s%s', $key, $this->keyDelimiter, $index);
+            $this->data[] = UserSyncData::fromData($dataKey, $value);
         }
     }
 
@@ -110,30 +115,52 @@ class UserSyncPipelineData implements UserPipelineData
     }
 
     /**
-     * @param string $extractorName
-     * @param int $index
-     * @return string
-     */
-    private function buildKey(string $extractorName, int $index): string
-    {
-        if($this->keyBuilder) {
-            return ($this->keyBuilder)($extractorName, $index);
-        }
-
-        return sprintf('%s_%s', $extractorName, $index);
-    }
-
-    /**
      * @param string $key
      * @return bool
      */
     private function exists(string $key): bool
     {
-        [$source, $index] = explode('_', $key);
+        [$source, $index] = explode($this->keyDelimiter, $key);
         if(!$source || !is_numeric($index)) {
             throw new RuntimeException(sprintf('Bad structure UserData key, source (%s) or index (%s)', $source, $index));
         }
 
-        return isset($this->sources[$source][$index]);
+        return isset($this->sources[$source]['data'][$index]);
+    }
+
+    /**
+     * @param string $key
+     * @return array
+     */
+    public function dataFromSource(string $key): array
+    {
+        if(strpos($key, $this->keyDelimiter) === false) {
+            throw new RuntimeException(sprintf('Invalid data key %s', $key));
+        }
+
+        [$sourceKey, $dataKey] = explode($this->keyDelimiter, $key);
+
+        if(!isset($this->sources[$sourceKey]['data'][(int) $dataKey])) {
+            throw new RuntimeException(sprintf('Source data with key %s not found', $key));
+        }
+
+        return $this->sources[$sourceKey]['data'][(int) $dataKey];
+    }
+
+    /**
+     * @param string $key
+     * @return string
+     */
+    public function sourceName(string $key): string
+    {
+        if(strpos($key, $this->keyDelimiter) !== false) {
+            [$key, ] = explode($this->keyDelimiter, $key);
+        }
+
+        if(!isset($this->sources[$key])) {
+            throw new RuntimeException(sprintf('Source with key %s not found', $key));
+        }
+
+        return $this->sources[$key]['name'];
     }
 }

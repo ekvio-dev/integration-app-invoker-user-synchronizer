@@ -8,16 +8,16 @@
     "packages": [
         {
             "name": "ekvio-dev/integration-app-contracts",
-            "version": "3.1.0",
+            "version": "3.3.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ekvio-dev/integration-app-contracts.git",
-                "reference": "82e76912795471458446c7906c2afb07f2c220f0"
+                "reference": "241cd2db84cd4babd944a440eddc0061a1c05fbc"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ekvio-dev/integration-app-contracts/zipball/82e76912795471458446c7906c2afb07f2c220f0",
-                "reference": "82e76912795471458446c7906c2afb07f2c220f0",
+                "url": "https://api.github.com/repos/ekvio-dev/integration-app-contracts/zipball/241cd2db84cd4babd944a440eddc0061a1c05fbc",
+                "reference": "241cd2db84cd4babd944a440eddc0061a1c05fbc",
                 "shasum": ""
             },
             "require": {
@@ -40,7 +40,7 @@
                 }
             ],
             "description": "Equeo integration application contracts",
-            "time": "2020-09-03T06:06:51+00:00"
+            "time": "2020-09-04T05:59:39+00:00"
         },
         {
             "name": "ekvio-dev/integration-php-sdk",
