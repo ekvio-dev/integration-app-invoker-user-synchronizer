@@ -65,7 +65,7 @@ class UserSyncPipelineData implements UserPipelineData
      */
     public function addSource(string $name, array $data): void
     {
-        $key = substr(md5($name), 0, 6);
+        $key = sprintf('%s_%s', count($this->sources), substr(md5($name), 0, 6));
 
         if(isset($this->sources[$key])) {
             throw new RuntimeException(sprintf('Source with name %s already exists', $name));
