@@ -70,6 +70,11 @@ class TypicalUserFactory implements UserFactory
     /**
      * @var callable
      */
+    private $afterBuild;
+
+    /**
+     * @var callable
+     */
     private $loginBuilder;
     /**
      * @var callable
@@ -132,7 +137,6 @@ class TypicalUserFactory implements UserFactory
      * @var callable
      */
     private $groupAssignmentBuilder;
-
     /**
      * @var string
      */
@@ -159,6 +163,10 @@ class TypicalUserFactory implements UserFactory
 
         if(isset($options['beforeBuild']) && is_callable($options['beforeBuild'])) {
             $this->beforeBuild = $options['beforeBuild'];
+        }
+
+        if(isset($options['afterBuild']) && is_callable($options['afterBuild'])) {
+            $this->afterBuild = $options['afterBuild'];
         }
 
         if(isset($options['loginBuilder']) && is_callable($options['loginBuilder'])) {
@@ -259,6 +267,10 @@ class TypicalUserFactory implements UserFactory
             }
 
             $data[] = $this->buildUser($userData);
+        }
+
+        if($this->afterBuild) {
+            $data = ($this->afterBuild)($data);
         }
 
         return $pipelineData->change($data);
