@@ -141,7 +141,10 @@ $httpClient = new Client([
 $prior = 'hr.csv';
 
 (new UserSynchronizer(
-    new ExtractorPriorityCollector($prior, [new Extractor2('hr2.csv'), new Extractor1($prior)]),
+    new ExtractorPriorityCollector($prior, [
+        'hr2.csv' => new Extractor2('some name'),
+        $prior => new Extractor1($prior)
+    ]),
     new TypicalUserFactory(),
     new TypicalUserValidator(),
     new User(new EqueoClient($httpClient, new HttpIntegrationResult(), 'http://nginx', '111222')),

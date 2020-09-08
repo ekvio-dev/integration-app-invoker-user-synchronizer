@@ -46,9 +46,9 @@ class ExtractorPriorityCollector implements Collector
     public function collect(array $options = [])
     {
         $sorted = [];
-        foreach ($this->extractors as $index => $extractor) {
-            if($extractor->name() === $this->priorExtractorName) {
-                $sorted[] = $extractor;
+        foreach ($this->extractors as $name => $extractor) {
+            if($name === $this->priorExtractorName) {
+                $sorted[$name] = $extractor;
             }
         }
 
@@ -56,16 +56,16 @@ class ExtractorPriorityCollector implements Collector
             throw new RuntimeException(sprintf('Not found prior extractor %s', $this->priorExtractorName));
         }
 
-        foreach ($this->extractors as $extractor) {
-            if($extractor->name() === $this->priorExtractorName) {
+        foreach ($this->extractors as $name => $extractor) {
+            if($name === $this->priorExtractorName) {
                 continue;
             }
-            $sorted[] = $extractor;
+            $sorted[$name] = $extractor;
         }
 
         $userSyncPipelineData = new UserSyncPipelineData();
-        foreach ($sorted as $extractor) {
-            $userSyncPipelineData->addSource($extractor->name(), $extractor->extract());
+        foreach ($sorted as $name => $extractor) {
+            $userSyncPipelineData->addSource($name, $extractor->extract());
         }
 
         return $userSyncPipelineData;
