@@ -167,7 +167,7 @@ class TypicalUserFactory implements UserFactory
         }
 
         if(isset($options['beforeBuild']) && is_callable($options['beforeBuild'])) {
-            $this->beforeUserBuild = $options['beforeBuild'];
+            $this->beforeBuild = $options['beforeBuild'];
         }
 
         if(isset($options['beforeUserBuild']) && is_callable($options['beforeUserBuild'])) {
