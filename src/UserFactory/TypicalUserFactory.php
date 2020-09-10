@@ -65,6 +65,11 @@ class TypicalUserFactory implements UserFactory
     /**
      * @var callable
      */
+    private $before;
+
+    /**
+     * @var callable
+     */
     private $beforeBuild;
 
     /**
@@ -159,6 +164,10 @@ class TypicalUserFactory implements UserFactory
 
         if(isset($options['forms'])) {
             $this->forms = $options['forms'];
+        }
+
+        if(isset($options['before']) && is_callable($options['before'])) {
+            $this->beforeBuild = $options['before'];
         }
 
         if(isset($options['beforeBuild']) && is_callable($options['beforeBuild'])) {
@@ -257,6 +266,12 @@ class TypicalUserFactory implements UserFactory
     public function build(UserPipelineData $pipelineData): UserPipelineData
     {
         $data = [];
+
+        if($this->before) {
+            $data = ($this->before)($pipelineData->data());
+            $pipelineData->change($data);
+        }
+
         foreach ($pipelineData->data() as $userData) {
             if($this->beforeBuild) {
                 $userData = ($this->beforeBuild)($userData);
