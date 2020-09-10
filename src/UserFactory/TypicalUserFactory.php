@@ -65,12 +65,12 @@ class TypicalUserFactory implements UserFactory
     /**
      * @var callable
      */
-    private $before;
+    private $beforeBuild;
 
     /**
      * @var callable
      */
-    private $beforeBuild;
+    private $beforeUserBuild;
 
     /**
      * @var callable
@@ -166,12 +166,12 @@ class TypicalUserFactory implements UserFactory
             $this->forms = $options['forms'];
         }
 
-        if(isset($options['before']) && is_callable($options['before'])) {
-            $this->beforeBuild = $options['before'];
+        if(isset($options['beforeBuild']) && is_callable($options['beforeBuild'])) {
+            $this->beforeUserBuild = $options['beforeBuild'];
         }
 
-        if(isset($options['beforeBuild']) && is_callable($options['beforeBuild'])) {
-            $this->beforeBuild = $options['beforeBuild'];
+        if(isset($options['beforeUserBuild']) && is_callable($options['beforeUserBuild'])) {
+            $this->beforeUserBuild = $options['beforeUserBuild'];
         }
 
         if(isset($options['afterBuild']) && is_callable($options['afterBuild'])) {
@@ -267,14 +267,14 @@ class TypicalUserFactory implements UserFactory
     {
         $data = [];
 
-        if($this->before) {
-            $data = ($this->before)($pipelineData->data());
+        if($this->beforeBuild) {
+            $data = ($this->beforeBuild)($pipelineData->data());
             $pipelineData->change($data);
         }
 
         foreach ($pipelineData->data() as $userData) {
-            if($this->beforeBuild) {
-                $userData = ($this->beforeBuild)($userData);
+            if($this->beforeUserBuild) {
+                $userData = ($this->beforeUserBuild)($userData);
             }
 
             if(!$userData instanceof UserData) {
