@@ -269,7 +269,7 @@ class TypicalUserFactory implements UserFactory
 
         if($this->beforeBuild) {
             $data = ($this->beforeBuild)($pipelineData->data());
-            $pipelineData->change($data);
+            $pipelineData = $pipelineData->change($data);
         }
 
         foreach ($pipelineData->data() as $userData) {
