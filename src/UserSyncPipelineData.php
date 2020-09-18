@@ -38,7 +38,7 @@ class UserSyncPipelineData implements UserPipelineData
      */
     public function __construct(array $options = [])
     {
-        $this->keyDelimiter = $options['keyDelimiter'] ?: self::DELIMITER;
+        $this->keyDelimiter = $options['keyDelimiter'] ?? self::DELIMITER;
     }
 
     /**
