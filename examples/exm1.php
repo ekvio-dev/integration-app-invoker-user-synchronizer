@@ -9,7 +9,7 @@ use Ekvio\Integration\Invoker\UserSynchronizer;
 use Ekvio\Integration\Invoker\UserValidation\TypicalUserValidator;
 use Ekvio\Integration\Sdk\V2\EqueoClient;
 use Ekvio\Integration\Sdk\V2\Integration\HttpIntegrationResult;
-use Ekvio\Integration\Sdk\V2\User\User;
+use Ekvio\Integration\Sdk\V2\User\UserApi;
 use GuzzleHttp\Client;
 
 require_once __DIR__ . '/../vendor/autoload.php';
@@ -147,6 +147,6 @@ $prior = 'hr.csv';
     ]),
     new TypicalUserFactory(),
     new TypicalUserValidator(),
-    new User(new EqueoClient($httpClient, new HttpIntegrationResult(), 'http://nginx', '111222')),
+    new UserApi(new EqueoClient($httpClient, new HttpIntegrationResult(), 'http://nginx', '111222')),
     new DumpProfiler()
 ))();

@@ -9,7 +9,7 @@ use Ekvio\Integration\Contracts\Profiler;
 use Ekvio\Integration\Contracts\User\UserPipelineData;
 use Ekvio\Integration\Invoker\UserFactory\UserFactory;
 use Ekvio\Integration\Invoker\UserValidation\UserValidator;
-use Ekvio\Integration\Sdk\V2\User\UserSync;
+use Ekvio\Integration\Sdk\V2\User\User;
 
 /**
  * Class UserSynchronizer
@@ -31,7 +31,7 @@ class UserSynchronizer implements Invoker
      */
     private $validator;
     /**
-     * @var UserSync
+     * @var User
      */
     private $equeoUserApi;
     /**
@@ -44,14 +44,14 @@ class UserSynchronizer implements Invoker
      * @param Collector $userCollector
      * @param UserFactory $userFactory
      * @param UserValidator $validator
-     * @param UserSync $userSync
+     * @param User $userSync
      * @param Profiler $profiler
      */
     public function __construct(
         Collector $userCollector,
         UserFactory $userFactory,
         UserValidator $validator,
-        UserSync $userSync,
+        User $userSync,
         Profiler $profiler)
     {
         $this->userCollector = $userCollector;
