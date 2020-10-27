@@ -4,6 +4,8 @@ declare(strict_types=1);
 namespace Ekvio\Integration\Invoker\Tests\Unit\UserFactory;
 
 use Ekvio\Integration\Invoker\UserFactory\TypicalUserFactory;
+use Ekvio\Integration\Invoker\UserSyncData;
+use Ekvio\Integration\Invoker\UserSyncPipelineData;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -32,22 +34,32 @@ class TypicalUserFactoryTest extends TestCase
         ];
     }
 
+    private function buildPipeline(array $data): UserSyncPipelineData
+    {
+        $pipeline = new UserSyncPipelineData();
+        $pipeline->addSource('test', $data);
+
+        return $pipeline;
+    }
+
     public function testBuildUserFromEmptyRaw()
     {
-        $factory = new TypicalUserFactory();
-        $this->assertEquals([], $factory->build([]));
+        $factory = (new TypicalUserFactory())->build($this->buildPipeline([]));
+        $this->assertEquals([], $factory->data());
     }
 
     public function testBuildUserFromOneUser()
     {
-        $factory = new TypicalUserFactory();
-        $this->assertEquals([], $factory->build(['login' => 'test', 'first_name' => 'Ivan']));
+        $factory = (new TypicalUserFactory())->build($this->buildPipeline([['login' => 'test', 'first_name' => 'Ivan']]));
+        $this->assertCount(1, $factory->data());
     }
 
     public function testBuildUserFromDefaultMap()
     {
-        $factory = new TypicalUserFactory();
-        $users = $factory->build([['login' => '']]);
+        $factory = (new TypicalUserFactory())->build($this->buildPipeline([['login' => '']]));
+        /** @var UserSyncData $user */
+        $user = $factory->data()[0];
+
         $this->assertEquals([
             'login' => null,
             'first_name' => null,
@@ -67,12 +79,12 @@ class TypicalUserFactoryTest extends TestCase
                 'department' => 'Demo department',
                 'assignment' => 'Demo assignment',
             ]
-        ], $users[0]);
+        ], $user->data());
     }
 
     public function testBuildUserWithCustomDefaultGroups()
     {
-        $factory = new TypicalUserFactory(['groupDefaults' => [
+        $factory = (new TypicalUserFactory(['groupDefaults' => [
             'groups.region' => 'custom region',
             'groups.city' => 'custom city',
             'groups.role' => 'custom role',
@@ -80,8 +92,11 @@ class TypicalUserFactoryTest extends TestCase
             'groups.team' => 'custom team',
             'groups.department' => 'custom department',
             'groups.assignment' => 'custom assignment',
-        ]]);
-        $users = $factory->build([['login' => '']]);
+        ]]))->build($this->buildPipeline([['login' => '']]));
+
+        /** @var UserSyncData $user */
+        $user = $factory->data()[0];
+
         $this->assertEquals([
             'login' => null,
             'first_name' => null,
@@ -101,13 +116,14 @@ class TypicalUserFactoryTest extends TestCase
                 'department' => 'custom department',
                 'assignment' => 'custom assignment',
             ]
-        ], $users[0]);
+        ], $user->data());
     }
 
     public function testBuildUserFromMap()
     {
-        $factory = new TypicalUserFactory();
-        $users = $factory->build([$this->user()]);
+        $factory = (new TypicalUserFactory())->build($this->buildPipeline([$this->user()]));
+        /** @var UserSyncData $user */
+        $user = $factory->data()[0];
 
         $this->assertEquals([
             'login' => 'test',
@@ -128,17 +144,20 @@ class TypicalUserFactoryTest extends TestCase
                 'department' => 'department',
                 'assignment' => 'assignment',
             ]
-        ], $users[0]);
+        ], $user->data());
     }
 
     public function testBuildUserWithCustomActiveStatus()
     {
-        $factory = new TypicalUserFactory(['activeStatus' => 'actual']);
         $fake = $this->user();
         $fake['USR_UDF_USER_FIRED'] = 'actual';
 
-        $users = $factory->build([$fake]);
-        $this->assertEquals('active', $users[0]['status']);
+        $factory = (new TypicalUserFactory(['activeStatus' => 'actual']))
+            ->build($this->buildPipeline([$fake]));
+        /** @var UserSyncData $user */
+        $user = $factory->data()[0];
+
+        $this->assertEquals('active', $user->data()['status']);
     }
 
     public function testBuildUserWithForms()
@@ -149,78 +168,80 @@ class TypicalUserFactoryTest extends TestCase
         $fake['FLAG1'] = 'test';
         $fake['FLAG2'] = null;
 
-        $factory = new TypicalUserFactory(['forms' => [
+        $factory = (new TypicalUserFactory(['forms' => [
             "1" => "OTCH",
             "2" => "BIRTH",
             4 => "FLAG1",
             "5" => 'FLAG2',
             "100" => "UNKNOWN_FORM"
-        ]]);
+        ]]))->build($this->buildPipeline([$fake]));
+        /** @var UserSyncData $user */
+        $user = $factory->data()[0];
 
-        $users = $factory->build([$fake]);
         $this->assertEquals([
             "1" => "Peter",
             "2" => "20.01.16",
             "4" => "test",
             "5" => null,
             "100" => null
-        ], $users[0]['forms']);
+        ], $user->data()['forms']);
     }
 
     public function testBuildUserWithCallableModifications()
     {
-        $factory = new TypicalUserFactory([
-            'loginBuilder' => static function(int $index, array $user) {
+        $factory = (new TypicalUserFactory([
+            'loginBuilder' => static function() {
                 return 'my.login';
             },
-            'firstNameBuilder' => static function(int $index, array $user) {
+            'firstNameBuilder' => static function() {
                 return 'my.first_name';
             },
-            'lastNameBuilder' => static function(int $index, array $user) {
+            'lastNameBuilder' => static function() {
                 return 'my.last_name';
             },
-            'emailBuilder' => static function(int $index, array $user) {
+            'emailBuilder' => static function() {
                 return null;
             },
-            'phoneBuilder' => static function(int $index, array $user) {
+            'phoneBuilder' => static function() {
                 return null;
             },
-            'verifiedEmailBuilder' => static function(int $index, array $user) {
+            'verifiedEmailBuilder' => static function() {
                 return true;
             },
-            'verifiedPhoneBuilder' => static function(int $index, array $user) {
+            'verifiedPhoneBuilder' => static function() {
                 return true;
             },
-            'chiefEmailBuilder' => static function(int $index, array $user) {
+            'chiefEmailBuilder' => static function() {
                 return null;
             },
-            'statusBuilder' => static function(int $index, array $user) {
+            'statusBuilder' => static function() {
                 return 'blocked';
             },
-            'groupRegionBuilder' => static function(int $index, array $user) {
+            'groupRegionBuilder' => static function() {
                 return 'my.region';
             },
-            'groupCityBuilder' => static function(int $index, array $user) {
+            'groupCityBuilder' => static function() {
                 return 'my.city';
             },
-            'groupRoleBuilder' => static function(int $index, array $user) {
+            'groupRoleBuilder' => static function() {
                 return 'my.role';
             },
-            'groupPositionBuilder' => static function(int $index, array $user) {
+            'groupPositionBuilder' => static function() {
                 return 'my.position';
             },
-            'groupTeamBuilder' => static function(int $index, array $user) {
+            'groupTeamBuilder' => static function() {
                 return 'my.team';
             },
-            'groupDepartmentBuilder' => static function(int $index, array $user) {
+            'groupDepartmentBuilder' => static function() {
                 return 'my.department';
             },
-            'groupAssignmentBuilder' => static function(int $index, array $user) {
+            'groupAssignmentBuilder' => static function() {
                 return 'my.assignment';
             },
-        ]);
+        ]))->build($this->buildPipeline([$this->user()]));
+        /** @var UserSyncData $user */
+        $user = $factory->data()[0];
 
-        $users = $factory->build([$this->user()]);
         $this->assertEquals([
             'login' => 'my.login',
             'first_name' => 'my.first_name',
@@ -240,19 +261,18 @@ class TypicalUserFactoryTest extends TestCase
                 'department' => 'my.department',
                 'assignment' => 'my.assignment',
             ]
-        ], $users[0]);
+        ], $user->data());
     }
 
     public function testBuildUserWithBeforeModification()
     {
-        $factory = new TypicalUserFactory([
-            'beforeBuild' => static function(int $index, array $user): array {
+        $factory = (new TypicalUserFactory([
+            'beforeBuild' => static function(): array {
                 return [];
             }
-        ]);
+        ]))->build($this->buildPipeline([$this->user()]));
+        $users = $factory->data();
 
-        $user = $this->user();
-        $users = $factory->build([$user]);
         $this->assertEquals([], $users);
     }
 
@@ -277,8 +297,11 @@ class TypicalUserFactoryTest extends TestCase
             ]
         ];
 
-        $factory = new TypicalUserFactory();
-        $users = $factory->build($users);
+        $factory = (new TypicalUserFactory())
+            ->build($this->buildPipeline($users));
+        /** @var UserSyncData $user */
+        $user = $factory->data()[0];
+
         $this->assertEquals([
             'login' => 'test',
             'first_name' => 'ivan',
@@ -298,7 +321,7 @@ class TypicalUserFactoryTest extends TestCase
                 'department' => 'Demo department',
                 'assignment' => 'Demo assignment',
             ]
-        ], $users[0]);
+        ], $user->data());
     }
 
     public function testBuildUserWithoutDefaultGroups()
@@ -322,8 +345,11 @@ class TypicalUserFactoryTest extends TestCase
             ]
         ];
 
-        $factory = new TypicalUserFactory(['useGroupDefaults' => false]);
-        $users = $factory->build($users);
+        $factory = (new TypicalUserFactory(['useGroupDefaults' => false]))
+            ->build($this->buildPipeline($users));
+        /** @var UserSyncData $user */
+        $user = $factory->data()[0];
+
         $this->assertEquals([
             'login' => 'test',
             'first_name' => 'ivan',
@@ -343,6 +369,6 @@ class TypicalUserFactoryTest extends TestCase
                 'department' => null,
                 'assignment' => null,
             ]
-        ], $users[0]);
+        ], $user->data());
     }
 }

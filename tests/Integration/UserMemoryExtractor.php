@@ -52,4 +52,9 @@ class UserMemoryExtractor implements Extractor
             ],
         ];
     }
+
+    public function name(): string
+    {
+        return 'Memory extractor';
+    }
 }

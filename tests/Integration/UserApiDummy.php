@@ -3,13 +3,15 @@ declare(strict_types=1);
 
 namespace Ekvio\Integration\Invoker\Tests\Integration;
 
-use Ekvio\Integration\Sdk\V2\User\UserSync;
+use Ekvio\Integration\Sdk\V2\User\User;
+use Ekvio\Integration\Sdk\V2\User\UserDeleteCriteria;
+use Ekvio\Integration\Sdk\V2\User\UserSearchCriteria;
 
 /**
  * Class UserApiDummy
  * @package Ekvio\Integration\Invoker\Tests\Integration
  */
-class UserApiDummy implements UserSync
+class UserApiDummy implements User
 {
     public function sync(array $users): array
     {
@@ -42,5 +44,20 @@ class UserApiDummy implements UserSync
                 ]
             ]
         ];
+    }
+
+    public function search(UserSearchCriteria $criteria): array
+    {
+        return [];
+    }
+
+    public function delete(UserDeleteCriteria $criteria): array
+    {
+        return [];
+    }
+
+    public function rename(array $logins): array
+    {
+        return [];
     }
 }

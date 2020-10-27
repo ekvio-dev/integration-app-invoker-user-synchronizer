@@ -8,12 +8,12 @@
     }
   ],
   "type": "project",
-  "minimum-stability": "dev",
+  "minimum-stability": "stable",
   "license": "MIT",
   "require": {
     "ext-json": "*",
     "ekvio-dev/integration-app-contracts": "^3",
-    "ekvio-dev/integration-php-sdk": "v2.x-dev"
+    "ekvio-dev/integration-php-sdk": "^2"
   },
   "autoload": {
     "psr-4": {

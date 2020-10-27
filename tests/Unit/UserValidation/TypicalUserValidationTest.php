@@ -3,8 +3,8 @@ declare(strict_types=1);
 
 namespace Ekvio\Integration\Invoker\Tests\Unit\UserValidation;
 
+use Ekvio\Integration\Invoker\UserSyncPipelineData;
 use Ekvio\Integration\Invoker\UserValidation\TypicalUserValidator;
-use Ekvio\Integration\Invoker\UserValidation\UserValidationCollector;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -33,13 +33,21 @@ class TypicalUserValidationTest extends TestCase
         ];
     }
 
+    private function buildPipeline(array $data): UserSyncPipelineData
+    {
+        $pipeline = new UserSyncPipelineData();
+        $pipeline->addSource('test', $data);
+
+        return $pipeline;
+    }
+
     public function testSuccessUserValidation()
     {
         $validator = new TypicalUserValidator();
 
-        $result = $validator->validate([$this->user()]);
-        $this->assertCount(1, $result->valid());
-        $this->assertCount(0, $result->errors());
+        $result = $validator->validate($this->buildPipeline([$this->user()]));
+        $this->assertCount(1, $result->data());
+        $this->assertCount(0, $result->logs());
     }
 
     public function testFalseUserLoginValidation()
@@ -48,9 +56,9 @@ class TypicalUserValidationTest extends TestCase
         $user = $this->user();
         $user['login'] = null;
 
-        $result = $validator->validate([$user]);
-        $this->assertCount(0, $result->valid());
-        $this->assertCount(1, $result->errors());
+        $result = $validator->validate($this->buildPipeline([$user]));
+        $this->assertCount(0, $result->data());
+        $this->assertCount(1, $result->logs());
     }
 
     public function testFalseFirstNameValidation()
@@ -59,14 +67,14 @@ class TypicalUserValidationTest extends TestCase
         $user = $this->user();
         $user['first_name'] = null;
 
-        $result = $validator->validate([$user]);
-        $this->assertCount(0, $result->valid());
-        $this->assertCount(1, $result->errors());
+        $result = $validator->validate($this->buildPipeline([$user]));
+        $this->assertCount(0, $result->data());
+        $this->assertCount(1, $result->logs());
 
         $user['first_name'] = 'Ivanov';
-        $result = $validator->validate([$user]);
-        $this->assertCount(0, $result->valid());
-        $this->assertCount(1, $result->errors());
+        $result = $validator->validate($this->buildPipeline([$user]));
+        $this->assertCount(0, $result->data());
+        $this->assertCount(1, $result->logs());
     }
 
     public function testFalseLastNameValidation()
@@ -75,14 +83,14 @@ class TypicalUserValidationTest extends TestCase
         $user = $this->user();
         $user['last_name'] = null;
 
-        $result = $validator->validate([$user]);
-        $this->assertCount(0, $result->valid());
-        $this->assertCount(1, $result->errors());
+        $result = $validator->validate($this->buildPipeline([$user]));
+        $this->assertCount(0, $result->data());
+        $this->assertCount(1, $result->logs());
 
         $user['last_name'] = 'Ivan';
-        $result = $validator->validate([$user]);
-        $this->assertCount(0, $result->valid());
-        $this->assertCount(1, $result->errors());
+        $result = $validator->validate($this->buildPipeline([$user]));
+        $this->assertCount(0, $result->data());
+        $this->assertCount(1, $result->logs());
     }
 
     public function testFalsePhoneValidation()
@@ -91,24 +99,23 @@ class TypicalUserValidationTest extends TestCase
         $user = $this->user();
         $user['phone'] = null;
 
-        $result = $validator->validate([$user]);
-        $this->assertCount(0, $result->valid());
-        $this->assertCount(1, $result->errors());
+        $result = $validator->validate($this->buildPipeline([$user]));
+        $this->assertCount(0, $result->data());
+        $this->assertCount(1, $result->logs());
 
         $user['phone'] = 'n79275200000';
-        $result = $validator->validate([$user]);
-        $this->assertCount(0, $result->valid());
-        $this->assertCount(1, $result->errors());
-
+        $result = $validator->validate($this->buildPipeline([$user]));
+        $this->assertCount(0, $result->data());
+        $this->assertCount(1, $result->logs());
         $user['phone'] = '123456789';
-        $result = $validator->validate([$user]);
-        $this->assertCount(0, $result->valid());
-        $this->assertCount(1, $result->errors());
+        $result = $validator->validate($this->buildPipeline([$user]));
+        $this->assertCount(0, $result->data());
+        $this->assertCount(1, $result->logs());;
 
         $user['phone'] = '12345678910111213';
-        $result = $validator->validate([$user]);
-        $this->assertCount(0, $result->valid());
-        $this->assertCount(1, $result->errors());
+        $result = $validator->validate($this->buildPipeline([$user]));
+        $this->assertCount(0, $result->data());
+        $this->assertCount(1, $result->logs());
     }
 
     public function testFalseEmailValidation()
@@ -117,9 +124,9 @@ class TypicalUserValidationTest extends TestCase
         $user = $this->user();
 
         $user['email'] = 'not-valid-email';
-        $result = $validator->validate([$user]);
-        $this->assertCount(0, $result->valid());
-        $this->assertCount(1, $result->errors());
+        $result = $validator->validate($this->buildPipeline([$user]));
+        $this->assertCount(0, $result->data());
+        $this->assertCount(1, $result->logs());
     }
 
     public function testSuccessEmailValidation()
@@ -128,9 +135,9 @@ class TypicalUserValidationTest extends TestCase
         $user = $this->user();
 
         $user['email'] = 'test@test.ru';
-        $result = $validator->validate([$user]);
-        $this->assertCount(1, $result->valid());
-        $this->assertCount(0, $result->errors());
+        $result = $validator->validate($this->buildPipeline([$user]));
+        $this->assertCount(1, $result->data());
+        $this->assertCount(0, $result->logs());
     }
 
     public function testFalseUserGroupsValidation()
@@ -139,30 +146,30 @@ class TypicalUserValidationTest extends TestCase
         $user = $this->user();
 
         unset($user['groups']['region']);
-        $result = $validator->validate([$user]);
-        $this->assertCount(0, $result->valid());
-        $this->assertCount(1, $result->errors());
+        $result = $validator->validate($this->buildPipeline([$user]));
+        $this->assertCount(0, $result->data());
+        $this->assertCount(1, $result->logs());
     }
 
     public function testUserValidationModifications()
     {
         $validator = new TypicalUserValidator([
-            'loginValidator' => static function(int $index, array $user, UserValidationCollector $collector) {
+            'loginValidator' => static function() {
                 return true;
             },
-            'firstNameValidator' => static function(int $index, array $user, UserValidationCollector $collector) {
+            'firstNameValidator' => static function() {
                 return true;
             },
-            'lastNameValidator' => static function(int $index, array $user, UserValidationCollector $collector) {
+            'lastNameValidator' => static function() {
                 return true;
             },
-            'phoneValidator' => static function(int $index, array $user, UserValidationCollector $collector) {
+            'phoneValidator' => static function() {
                 return true;
             },
-            'emailValidator' => static function(int $index, array $user, UserValidationCollector $collector) {
+            'emailValidator' => static function() {
                 return true;
             },
-            'groupsValidator' => static function(int $index, array $user, UserValidationCollector $collector) {
+            'groupsValidator' => static function() {
                 return true;
             },
         ]);
@@ -184,8 +191,8 @@ class TypicalUserValidationTest extends TestCase
             ]
         ];
 
-        $result = $validator->validate([$user]);
-        $this->assertCount(1, $result->valid());
-        $this->assertCount(0, $result->errors());
+        $result = $validator->validate($this->buildPipeline([$user]));
+        $this->assertCount(1, $result->data());
+        $this->assertCount(0, $result->logs());
     }
 }
