@@ -190,52 +190,52 @@ class TypicalUserFactoryTest extends TestCase
     public function testBuildUserWithCallableModifications()
     {
         $factory = (new TypicalUserFactory([
-            'loginBuilder' => static function() {
+            'loginBuilder' => function() {
                 return 'my.login';
             },
-            'firstNameBuilder' => static function() {
+            'firstNameBuilder' => function() {
                 return 'my.first_name';
             },
-            'lastNameBuilder' => static function() {
+            'lastNameBuilder' => function() {
                 return 'my.last_name';
             },
-            'emailBuilder' => static function() {
+            'emailBuilder' => function() {
                 return null;
             },
-            'phoneBuilder' => static function() {
+            'phoneBuilder' => function() {
                 return null;
             },
-            'verifiedEmailBuilder' => static function() {
+            'verifiedEmailBuilder' => function() {
                 return true;
             },
-            'verifiedPhoneBuilder' => static function() {
+            'verifiedPhoneBuilder' => function() {
                 return true;
             },
-            'chiefEmailBuilder' => static function() {
+            'chiefEmailBuilder' => function() {
                 return null;
             },
-            'statusBuilder' => static function() {
+            'statusBuilder' => function() {
                 return 'blocked';
             },
-            'groupRegionBuilder' => static function() {
+            'groupRegionBuilder' => function() {
                 return 'my.region';
             },
-            'groupCityBuilder' => static function() {
+            'groupCityBuilder' => function() {
                 return 'my.city';
             },
-            'groupRoleBuilder' => static function() {
+            'groupRoleBuilder' => function() {
                 return 'my.role';
             },
-            'groupPositionBuilder' => static function() {
+            'groupPositionBuilder' => function() {
                 return 'my.position';
             },
-            'groupTeamBuilder' => static function() {
+            'groupTeamBuilder' => function() {
                 return 'my.team';
             },
-            'groupDepartmentBuilder' => static function() {
+            'groupDepartmentBuilder' => function() {
                 return 'my.department';
             },
-            'groupAssignmentBuilder' => static function() {
+            'groupAssignmentBuilder' => function() {
                 return 'my.assignment';
             },
         ]))->build($this->buildPipeline([$this->user()]));
@@ -267,7 +267,7 @@ class TypicalUserFactoryTest extends TestCase
     public function testBuildUserWithBeforeModification()
     {
         $factory = (new TypicalUserFactory([
-            'beforeBuild' => static function(): array {
+            'beforeBuild' => function(): array {
                 return [];
             }
         ]))->build($this->buildPipeline([$this->user()]));

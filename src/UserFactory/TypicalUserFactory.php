@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Ekvio\Integration\Invoker\UserFactory;
 
+use Closure;
 use Ekvio\Integration\Contracts\User\UserData;
 use Ekvio\Integration\Contracts\User\UserPipelineData;
 use Ekvio\Integration\Invoker\UserSyncData;
@@ -58,92 +59,92 @@ class TypicalUserFactory implements UserFactory
     private $forms = [];
 
     /**
-     * @var callable
+     * @var Closure
      */
     private $buildForms;
 
     /**
-     * @var callable
+     * @var Closure
      */
     private $beforeBuild;
 
     /**
-     * @var callable
+     * @var Closure
      */
     private $beforeUserBuild;
 
     /**
-     * @var callable
+     * @var Closure
      */
     private $afterBuild;
 
     /**
-     * @var callable
+     * @var Closure
      */
     private $loginBuilder;
     /**
-     * @var callable
+     * @var Closure
      */
     private $firstNameBuilder;
     /**
-     * @var callable
+     * @var Closure
      */
     private $lastNameBuilder;
 
     /**
-     * @var callable
+     * @var Closure
      */
     private $emailBuilder;
     /**
-     * @var callable
+     * @var Closure
      */
     private $phoneBuilder;
     /**
-     * @var callable
+     * @var Closure
      */
     private $verifiedEmailBuilder;
     /**
-     * @var callable
+     * @var Closure
      */
     private $verifiedPhoneBuilder;
     /**
-     * @var callable
+     * @var Closure
      */
     private $chiefEmailBuilder;
     /**
-     * @var callable
+     * @var Closure
      */
     private $statusBuilder;
     /**
-     * @var callable
+     * @var Closure
      */
     private $groupRegionBuilder;
     /**
-     * @var callable
+     * @var Closure
      */
     private $groupCityBuilder;
     /**
-     * @var callable
+     * @var Closure
      */
     private $groupRoleBuilder;
     /**
-     * @var callable
+     * @var Closure
      */
     private $groupPositionBuilder;
     /**
-     * @var callable
+     * @var Closure
      */
     private $groupTeamBuilder;
     /**
-     * @var callable
+     * @var Closure
      */
     private $groupDepartmentBuilder;
     /**
-     * @var callable
+     * @var Closure
      */
     private $groupAssignmentBuilder;
     /**
-     * @var string
+     * @var Closure
      */
     private $activeStatus = self::USER_ACTIVE;
 
@@ -299,54 +300,54 @@ class TypicalUserFactory implements UserFactory
         $index = $userData->key();
         $user = $userData->data();
 
-        $email = $this->emailBuilder ? ($this->emailBuilder)($index, $user) : $this->buildEmail($user);
-        $phone = $this->phoneBuilder ? ($this->phoneBuilder)($index, $user) : $this->buildPhone($user);
+        $email = $this->emailBuilder ? $this->emailBuilder->call($this, $index, $user) : $this->buildEmail($user);
+        $phone = $this->phoneBuilder ? $this->phoneBuilder->call($this, $index, $user) : $this->buildPhone($user);
 
         $data = [
             'login' => $this->loginBuilder
-                ? ($this->loginBuilder)($index, $user)
+                ? $this->loginBuilder->call($this, $index, $user)
                 : $this->buildLogin($user),
             'first_name' => $this->firstNameBuilder
-                ? ($this->firstNameBuilder)($index, $user)
+                ? $this->firstNameBuilder->call($this, $index, $user)
                 : $this->buildFirstName($user),
             'last_name' => $this->lastNameBuilder
-                ? ($this->lastNameBuilder)($index, $user)
+                ? $this->lastNameBuilder->call($this, $index, $user)
                 : $this->buildLastName($user),
             'email' => $email,
             'phone' => $phone,
             'verified_email' => $this->verifiedEmailBuilder
-                ? (bool)($this->verifiedEmailBuilder)($index, $user)
+                ? (bool) $this->verifiedEmailBuilder->call($this, $index, $user)
                 : $this->buildVerifiedEmail($email),
             'verified_phone' => $this->verifiedPhoneBuilder
-                ? (bool)($this->verifiedPhoneBuilder)($index, $user)
+                ? (bool) $this->verifiedPhoneBuilder->call($this, $index, $user)
                 : $this->buildVerifiedPhone($phone),
             'chief_email' => $this->chiefEmailBuilder
-                ? ($this->chiefEmailBuilder)($index, $user)
+                ? $this->chiefEmailBuilder->call($this, $index, $user)
                 : $this->buildChiefEmail($user),
             'status' => $this->statusBuilder
-                ? ($this->statusBuilder)($index, $user)
+                ? $this->statusBuilder->call($this, $index, $user)
                 : $this->buildStatus($user),
             'groups' => [
                 'region' => $this->groupRegionBuilder
-                    ? ($this->groupRegionBuilder)($index, $user)
+                    ? $this->groupRegionBuilder->call($this, $index, $user)
                     : $this->buildGroup('groups.region', $user),
                 'city' => $this->groupCityBuilder
-                    ? ($this->groupCityBuilder)($index, $user)
+                    ? $this->groupCityBuilder->call($this, $index, $user)
                     : $this->buildGroup('groups.city', $user),
                 'role' => $this->groupRoleBuilder
-                    ? ($this->groupRoleBuilder)($index, $user)
+                    ? $this->groupRoleBuilder->call($this, $index, $user)
                     : $this->buildGroup('groups.role', $user),
                 'position' => $this->groupPositionBuilder
-                    ? ($this->groupPositionBuilder)($index, $user)
+                    ? $this->groupPositionBuilder->call($this, $index, $user)
                     : $this->buildGroup('groups.position', $user),
                 'team' => $this->groupTeamBuilder
-                    ? ($this->groupTeamBuilder)($index, $user)
+                    ? $this->groupTeamBuilder->call($this, $index, $user)
                     : $this->buildGroup('groups.team', $user),
                 'department' => $this->groupDepartmentBuilder
-                    ? ($this->groupDepartmentBuilder)($index, $user)
+                    ? $this->groupDepartmentBuilder->call($this, $index, $user)
                     : $this->buildGroup('groups.department', $user),
                 'assignment' => $this->groupAssignmentBuilder
-                    ? ($this->groupAssignmentBuilder)($index, $user)
+                    ? $this->groupAssignmentBuilder->call($this, $index, $user)
                     : $this->buildGroup('groups.assignment', $user)
             ]
         ];
@@ -354,7 +355,7 @@ class TypicalUserFactory implements UserFactory
         if($this->forms) {
             $forms = $this->forms;
             if($this->buildForms) {
-                $forms = ($this->buildForms)($index, $user, $forms);
+                $forms = $this->buildForms->call($this, $index, $user, $forms);
             } else {
                 foreach ($this->forms as $id => $form) {
                     $forms[(string) $id] = $user[$form] ?? self::DEFAULT_FORM_VALUE;

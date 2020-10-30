@@ -145,7 +145,11 @@ $prior = 'hr.csv';
         'hr2.csv' => new Extractor2('some name'),
         $prior => new Extractor1($prior)
     ]),
-    new TypicalUserFactory(),
+    new TypicalUserFactory([
+        'emailBuilder' => function (string $index, array $user) {
+            return sprintf('%s@dev.dev', $user[$this->attributes['login']]);
+        }
+    ]),
     new TypicalUserValidator(),
     new UserApi(new EqueoClient($httpClient, new HttpIntegrationResult(), 'http://nginx', '111222')),
     new DumpProfiler()
