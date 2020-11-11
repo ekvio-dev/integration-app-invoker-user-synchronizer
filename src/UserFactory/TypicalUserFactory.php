@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Ekvio\Integration\Invoker\UserFactory;
@@ -159,103 +160,103 @@ class TypicalUserFactory implements UserFactory
      */
     public function __construct(array $options = [])
     {
-        if(isset($options['attributes'])) {
+        if (isset($options['attributes'])) {
             $this->attributes = array_merge($this->attributes, $options['attributes']);
         }
 
-        if(isset($options['forms'])) {
+        if (isset($options['forms'])) {
             $this->forms = $options['forms'];
         }
 
-        if(isset($options['beforeBuild']) && is_callable($options['beforeBuild'])) {
+        if (isset($options['beforeBuild']) && is_callable($options['beforeBuild'])) {
             $this->beforeBuild = $options['beforeBuild'];
         }
 
-        if(isset($options['beforeUserBuild']) && is_callable($options['beforeUserBuild'])) {
+        if (isset($options['beforeUserBuild']) && is_callable($options['beforeUserBuild'])) {
             $this->beforeUserBuild = $options['beforeUserBuild'];
         }
 
-        if(isset($options['afterBuild']) && is_callable($options['afterBuild'])) {
+        if (isset($options['afterBuild']) && is_callable($options['afterBuild'])) {
             $this->afterBuild = $options['afterBuild'];
         }
 
-        if(isset($options['loginBuilder']) && is_callable($options['loginBuilder'])) {
+        if (isset($options['loginBuilder']) && is_callable($options['loginBuilder'])) {
             $this->loginBuilder = $options['loginBuilder'];
         }
 
-        if(isset($options['firstNameBuilder']) && is_callable($options['firstNameBuilder'])) {
+        if (isset($options['firstNameBuilder']) && is_callable($options['firstNameBuilder'])) {
             $this->firstNameBuilder = $options['firstNameBuilder'];
         }
 
-        if(isset($options['lastNameBuilder']) && is_callable($options['lastNameBuilder'])) {
+        if (isset($options['lastNameBuilder']) && is_callable($options['lastNameBuilder'])) {
             $this->lastNameBuilder = $options['lastNameBuilder'];
         }
 
-        if(isset($options['emailBuilder']) && is_callable($options['emailBuilder'])) {
+        if (isset($options['emailBuilder']) && is_callable($options['emailBuilder'])) {
             $this->emailBuilder = $options['emailBuilder'];
         }
 
-        if(isset($options['phoneBuilder']) && is_callable($options['phoneBuilder'])) {
+        if (isset($options['phoneBuilder']) && is_callable($options['phoneBuilder'])) {
             $this->phoneBuilder = $options['phoneBuilder'];
         }
 
-        if(isset($options['verifiedEmailBuilder']) && is_callable($options['verifiedEmailBuilder'])) {
+        if (isset($options['verifiedEmailBuilder']) && is_callable($options['verifiedEmailBuilder'])) {
             $this->verifiedEmailBuilder = $options['verifiedEmailBuilder'];
         }
 
-        if(isset($options['verifiedPhoneBuilder']) && is_callable($options['verifiedPhoneBuilder'])) {
+        if (isset($options['verifiedPhoneBuilder']) && is_callable($options['verifiedPhoneBuilder'])) {
             $this->verifiedPhoneBuilder = $options['verifiedPhoneBuilder'];
         }
 
-        if(isset($options['chiefEmailBuilder']) && is_callable($options['chiefEmailBuilder'])) {
+        if (isset($options['chiefEmailBuilder']) && is_callable($options['chiefEmailBuilder'])) {
             $this->chiefEmailBuilder = $options['chiefEmailBuilder'];
         }
 
-        if(isset($options['statusBuilder']) && is_callable($options['statusBuilder'])) {
+        if (isset($options['statusBuilder']) && is_callable($options['statusBuilder'])) {
             $this->statusBuilder = $options['statusBuilder'];
         }
 
-        if(isset($options['groupRegionBuilder']) && is_callable($options['groupRegionBuilder'])) {
+        if (isset($options['groupRegionBuilder']) && is_callable($options['groupRegionBuilder'])) {
             $this->groupRegionBuilder = $options['groupRegionBuilder'];
         }
 
-        if(isset($options['groupCityBuilder']) && is_callable($options['groupCityBuilder'])) {
+        if (isset($options['groupCityBuilder']) && is_callable($options['groupCityBuilder'])) {
             $this->groupCityBuilder = $options['groupCityBuilder'];
         }
 
-        if(isset($options['groupRoleBuilder']) && is_callable($options['groupRoleBuilder'])) {
+        if (isset($options['groupRoleBuilder']) && is_callable($options['groupRoleBuilder'])) {
             $this->groupRoleBuilder = $options['groupRoleBuilder'];
         }
 
-        if(isset($options['groupPositionBuilder']) && is_callable($options['groupPositionBuilder'])) {
+        if (isset($options['groupPositionBuilder']) && is_callable($options['groupPositionBuilder'])) {
             $this->groupPositionBuilder = $options['groupPositionBuilder'];
         }
 
-        if(isset($options['groupTeamBuilder']) && is_callable($options['groupTeamBuilder'])) {
+        if (isset($options['groupTeamBuilder']) && is_callable($options['groupTeamBuilder'])) {
             $this->groupTeamBuilder = $options['groupTeamBuilder'];
         }
 
-        if(isset($options['groupDepartmentBuilder']) && is_callable($options['groupDepartmentBuilder'])) {
+        if (isset($options['groupDepartmentBuilder']) && is_callable($options['groupDepartmentBuilder'])) {
             $this->groupDepartmentBuilder = $options['groupDepartmentBuilder'];
         }
 
-        if(isset($options['groupAssignmentBuilder']) && is_callable($options['groupAssignmentBuilder'])) {
+        if (isset($options['groupAssignmentBuilder']) && is_callable($options['groupAssignmentBuilder'])) {
             $this->groupAssignmentBuilder = $options['groupAssignmentBuilder'];
         }
 
-        if(isset($options['forms']) && is_array($options['forms'])) {
+        if (isset($options['forms']) && is_array($options['forms'])) {
             $this->forms = $options['forms'];
         }
 
-        if(isset($options['groupDefaults']) && is_array($options['groupDefaults'])) {
+        if (isset($options['groupDefaults']) && is_array($options['groupDefaults'])) {
             $this->groupDefaults = array_merge($this->groupDefaults, $options['groupDefaults']);
         }
 
-        if(isset($options['activeStatus'])) {
+        if (isset($options['activeStatus'])) {
             $this->activeStatus = (string) $options['activeStatus'];
         }
 
-        if(isset($options['useGroupDefaults'])) {
+        if (isset($options['useGroupDefaults'])) {
             $this->useGroupDefaults = (bool) $options['useGroupDefaults'];
         }
     }
@@ -266,25 +267,25 @@ class TypicalUserFactory implements UserFactory
      */
     public function build(UserPipelineData $pipelineData): UserPipelineData
     {
-        if($this->beforeBuild) {
+        if ($this->beforeBuild) {
             $data = ($this->beforeBuild)($pipelineData->data());
             $pipelineData = $pipelineData->change($data);
         }
 
         $data = [];
         foreach ($pipelineData->data() as $userData) {
-            if($this->beforeUserBuild) {
+            if ($this->beforeUserBuild) {
                 $userData = ($this->beforeUserBuild)($userData);
             }
 
-            if(!$userData instanceof UserData) {
+            if (!$userData instanceof UserData) {
                 continue;
             }
 
             $data[] = $this->buildUser($userData);
         }
 
-        if($this->afterBuild) {
+        if ($this->afterBuild) {
             $data = ($this->afterBuild)($data);
         }
 
@@ -352,9 +353,9 @@ class TypicalUserFactory implements UserFactory
             ]
         ];
 
-        if($this->forms) {
+        if ($this->forms) {
             $forms = $this->forms;
-            if($this->buildForms) {
+            if ($this->buildForms) {
                 $forms = $this->buildForms->call($this, $index, $user, $forms);
             } else {
                 foreach ($this->forms as $id => $form) {
@@ -375,7 +376,7 @@ class TypicalUserFactory implements UserFactory
     protected function buildLogin(array $user): ?string
     {
         $login = $user[$this->attributes['login']] ?? null;
-        if($login) {
+        if ($login) {
             return trim($login);
         }
 
@@ -389,7 +390,7 @@ class TypicalUserFactory implements UserFactory
     protected function buildFirstName(array $user): ?string
     {
         $firstName = $user[$this->attributes['first_name']] ?? null;
-        if($firstName) {
+        if ($firstName) {
             return trim($firstName);
         }
 
@@ -403,7 +404,7 @@ class TypicalUserFactory implements UserFactory
     protected function buildLastName(array $user): ?string
     {
         $lastName = $user[$this->attributes['last_name']] ?? null;
-        if($lastName) {
+        if ($lastName) {
             return trim($lastName);
         }
 
@@ -417,7 +418,7 @@ class TypicalUserFactory implements UserFactory
     protected function buildEmail(array $user): ?string
     {
         $email = $user[$this->attributes['email']] ?? null;
-        if($email) {
+        if ($email) {
             return trim($email);
         }
 
@@ -431,7 +432,7 @@ class TypicalUserFactory implements UserFactory
     protected function buildPhone(array $user): ?string
     {
         $phone = $user[$this->attributes['phone']] ?? null;
-        if(!$phone) {
+        if (!$phone) {
             return null;
         }
 
@@ -463,7 +464,7 @@ class TypicalUserFactory implements UserFactory
     protected function buildChiefEmail(array $user): ?string
     {
         $chiefEmail = $user[$this->attributes['chief_email']] ?? null;
-        if($chiefEmail) {
+        if ($chiefEmail) {
             return trim($chiefEmail);
         }
 
@@ -488,11 +489,11 @@ class TypicalUserFactory implements UserFactory
     protected function buildGroup(string $type, array $user): ?string
     {
         $group = $user[$this->attributes[$type]] ?? null;
-        if($group) {
+        if ($group) {
             return trim($group);
         }
 
-        if($this->useGroupDefaults) {
+        if ($this->useGroupDefaults) {
             return $this->groupDefaults[$type];
         }
 

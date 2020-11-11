@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Ekvio\Integration\Invoker;
@@ -67,7 +68,7 @@ class UserSyncPipelineData implements UserPipelineData
     {
         $key = sprintf('%s_%s', count($this->sources), substr(md5($name), 0, 6));
 
-        if(isset($this->sources[$key])) {
+        if (isset($this->sources[$key])) {
             throw new RuntimeException(sprintf('Source with name %s already exists', $name));
         }
 
@@ -121,8 +122,10 @@ class UserSyncPipelineData implements UserPipelineData
     private function exists(string $key): bool
     {
         [$source, $index] = explode($this->keyDelimiter, $key);
-        if(!$source || !is_numeric($index)) {
-            throw new RuntimeException(sprintf('Bad structure UserData key, source (%s) or index (%s)', $source, $index));
+        if (!$source || !is_numeric($index)) {
+            throw new RuntimeException(
+                sprintf('Bad structure UserData key, source (%s) or index (%s)', $source, $index)
+            );
         }
 
         return isset($this->sources[$source]['data'][$index]);
@@ -134,13 +137,13 @@ class UserSyncPipelineData implements UserPipelineData
      */
     public function dataFromSource(string $key): array
     {
-        if(strpos($key, $this->keyDelimiter) === false) {
+        if (strpos($key, $this->keyDelimiter) === false) {
             throw new RuntimeException(sprintf('Invalid data key %s', $key));
         }
 
         [$sourceKey, $dataKey] = explode($this->keyDelimiter, $key);
 
-        if(!isset($this->sources[$sourceKey]['data'][(int) $dataKey])) {
+        if (!isset($this->sources[$sourceKey]['data'][(int) $dataKey])) {
             throw new RuntimeException(sprintf('Source data with key %s not found', $key));
         }
 
@@ -153,11 +156,11 @@ class UserSyncPipelineData implements UserPipelineData
      */
     public function sourceName(string $key): string
     {
-        if(strpos($key, $this->keyDelimiter) !== false) {
+        if (strpos($key, $this->keyDelimiter) !== false) {
             [$key, ] = explode($this->keyDelimiter, $key);
         }
 
-        if(!isset($this->sources[$key])) {
+        if (!isset($this->sources[$key])) {
             throw new RuntimeException(sprintf('Source with key %s not found', $key));
         }
 

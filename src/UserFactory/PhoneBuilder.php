@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Ekvio\Integration\Invoker\UserFactory;
@@ -21,18 +22,18 @@ class PhoneBuilder
         }
 
         $symbols = strlen($phone);
-        if($symbols === 10) {
+        if ($symbols === 10) {
             $first = $phone[0];
-            if($first === '9') {
+            if ($first === '9') {
                 return  '7' . $phone;
             }
 
             return $phone;
         }
 
-        if($symbols === 11) {
+        if ($symbols === 11) {
             $first = $phone[0];
-            if($first === '8') {
+            if ($first === '8') {
                 return  substr_replace($phone, '7', 0, 1);
             }
             return $phone;

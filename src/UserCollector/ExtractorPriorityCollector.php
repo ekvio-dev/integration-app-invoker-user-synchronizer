@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Ekvio\Integration\Invoker\UserCollector;
@@ -33,7 +34,11 @@ class ExtractorPriorityCollector implements Collector
     {
         Assert::notEmpty($priorExtractorName, 'Prior extractor name required');
         Assert::notEmpty($extractors, 'Extractors required');
-        Assert::allIsInstanceOf($extractors, Extractor::class, sprintf('All extractors must implement %s', Extractor::class));
+        Assert::allIsInstanceOf(
+            $extractors,
+            Extractor::class,
+            sprintf('All extractors must implement %s', Extractor::class)
+        );
 
         $this->priorExtractorName = $priorExtractorName;
         $this->extractors = $extractors;
@@ -47,17 +52,17 @@ class ExtractorPriorityCollector implements Collector
     {
         $sorted = [];
         foreach ($this->extractors as $name => $extractor) {
-            if($name === $this->priorExtractorName) {
+            if ($name === $this->priorExtractorName) {
                 $sorted[$name] = $extractor;
             }
         }
 
-        if(!$sorted) {
+        if (!$sorted) {
             throw new RuntimeException(sprintf('Not found prior extractor %s', $this->priorExtractorName));
         }
 
         foreach ($this->extractors as $name => $extractor) {
-            if($name === $this->priorExtractorName) {
+            if ($name === $this->priorExtractorName) {
                 continue;
             }
             $sorted[$name] = $extractor;

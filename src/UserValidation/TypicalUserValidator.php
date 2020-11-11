@@ -1,8 +1,10 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Ekvio\Integration\Invoker\UserValidation;
 
+use Closure;
 use Ekvio\Integration\Contracts\User\UserData;
 use Ekvio\Integration\Contracts\User\UserPipelineData;
 use Ekvio\Integration\Invoker\UserSyncPipelineData;
@@ -19,7 +21,7 @@ class TypicalUserValidator implements UserValidator
      */
     private $validationCollector;
     /**
-     * @var callable
+     * @var Closure
      */
     private $loginValidator;
     /**
@@ -27,27 +29,27 @@ class TypicalUserValidator implements UserValidator
      */
     private $loginCollection = [];
     /**
-     * @var callable
+     * @var Closure
      */
     private $loginCollectionValidator;
     /**
-     * @var callable
+     * @var Closure
      */
     private $firstNameValidator;
     /**
-     * @var callable
+     * @var Closure
      */
     private $lastNameValidator;
     /**
-     * @var callable
+     * @var Closure
      */
     private $phoneValidator;
     /**
-     * @var callable
+     * @var Closure
      */
     private $emailValidator;
     /**
-     * @var callable
+     * @var Closure
      */
     private $groupsValidator;
 
@@ -57,31 +59,31 @@ class TypicalUserValidator implements UserValidator
      */
     public function __construct(array $options = [])
     {
-        if(isset($options['loginCollectionValidator']) && is_callable($options['loginCollectionValidator'])) {
+        if (isset($options['loginCollectionValidator']) && is_callable($options['loginCollectionValidator'])) {
             $this->loginCollectionValidator = $options['loginCollectionValidator'];
         }
 
-        if(isset($options['loginValidator']) && is_callable($options['loginValidator'])) {
+        if (isset($options['loginValidator']) && is_callable($options['loginValidator'])) {
             $this->loginValidator = $options['loginValidator'];
         }
 
-        if(isset($options['firstNameValidator']) && is_callable($options['firstNameValidator'])) {
+        if (isset($options['firstNameValidator']) && is_callable($options['firstNameValidator'])) {
             $this->firstNameValidator = $options['firstNameValidator'];
         }
 
-        if(isset($options['lastNameValidator']) && is_callable($options['lastNameValidator'])) {
+        if (isset($options['lastNameValidator']) && is_callable($options['lastNameValidator'])) {
             $this->lastNameValidator = $options['lastNameValidator'];
         }
 
-        if(isset($options['phoneValidator']) && is_callable($options['phoneValidator'])) {
+        if (isset($options['phoneValidator']) && is_callable($options['phoneValidator'])) {
             $this->phoneValidator = $options['phoneValidator'];
         }
 
-        if(isset($options['emailValidator']) && is_callable($options['emailValidator'])) {
+        if (isset($options['emailValidator']) && is_callable($options['emailValidator'])) {
             $this->emailValidator = $options['emailValidator'];
         }
 
-        if(isset($options['groupsValidator']) && is_callable($options['groupsValidator'])) {
+        if (isset($options['groupsValidator']) && is_callable($options['groupsValidator'])) {
             $this->groupsValidator = $options['groupsValidator'];
         }
     }
@@ -117,34 +119,34 @@ class TypicalUserValidator implements UserValidator
         $user = $userData->data();
 
         $results[] = $this->loginValidator
-            ? (bool)($this->loginValidator)($index, $user, $this->validationCollector)
+            ? (bool) $this->loginValidator->call($this, $index, $user)
             : $this->isValidLogin($index, $user);
 
         $results[] = $this->loginCollectionValidator
-            ? (bool) ($this->loginCollectionValidator)($index, $user, $this->loginCollection)
-            : $this->isLoginExist($index, $user);
+            ? (bool) $this->loginCollectionValidator->call($this, $index, $user)
+            : $this->isLoginAlreadyExist($index, $user);
 
         $results[] = $this->firstNameValidator
-            ? (bool)($this->firstNameValidator)($index, $user, $this->validationCollector)
+            ? (bool) $this->firstNameValidator->call($this, $index, $user)
             : $this->isValidFirstName($index, $user);
 
         $results[] = $this->lastNameValidator
-            ? (bool)($this->lastNameValidator)($index, $user, $this->validationCollector)
+            ? (bool) $this->lastNameValidator->call($this, $index, $user)
             : $this->isValidLastName($index, $user);
 
         $results[] = $this->phoneValidator
-            ? (bool)($this->phoneValidator)($index, $user, $this->validationCollector)
+            ? (bool) $this->phoneValidator->call($this, $index, $user)
             : $this->isValidPhone($index, $user);
 
         $results[] = $this->emailValidator
-            ? (bool)($this->emailValidator)($index, $user, $this->validationCollector)
+            ? (bool) $this->emailValidator->call($this, $index, $user)
             : $this->isValidEmail($index, $user);
 
         $results[] = $this->groupsValidator
             ? (bool)($this->groupsValidator)($index, $user, $this->validationCollector)
             : $this->isValidGroups($index, $user);
 
-        if($this->isValid($results)) {
+        if ($this->isValid($results)) {
             $this->validationCollector->addValid($userData);
             $this->loginCollection[] = $user['login'];
         }
@@ -157,7 +159,7 @@ class TypicalUserValidator implements UserValidator
     protected function isValid(array $results): bool
     {
         foreach ($results as $result) {
-            if($result === false) {
+            if ($result === false) {
                 return false;
             }
         }
@@ -172,7 +174,7 @@ class TypicalUserValidator implements UserValidator
      */
     protected function isValidLogin(string $index, array $user): bool
     {
-        if(empty($user['login'])) {
+        if (empty($user['login'])) {
             $this->validationCollector->addError($index, null, 'login', 'Login required');
             return false;
         }
@@ -186,9 +188,9 @@ class TypicalUserValidator implements UserValidator
      * @param array $user
      * @return bool
      */
-    protected function isLoginExist(string $index, array $user): bool
+    protected function isLoginAlreadyExist(string $index, array $user): bool
     {
-        if(!empty($user['login']) && in_array($user['login'], $this->loginCollection, true)) {
+        if (!empty($user['login']) && in_array($user['login'], $this->loginCollection, true)) {
             $this->validationCollector->addError($index, $user['login'], 'login', 'Login already exists');
             return false;
         }
@@ -205,12 +207,12 @@ class TypicalUserValidator implements UserValidator
     {
         $key = 'first_name';
         $login = $this->getLogin($user);
-        if(empty($user[$key])) {
+        if (empty($user[$key])) {
             $this->validationCollector->addError($index, $login, $key, 'First name required');
             return false;
         }
 
-        if(!$this->isCyrillic($user[$key])) {
+        if (!$this->isCyrillic($user[$key])) {
             $this->validationCollector->addError($index, $login, $key, 'First name must be cyrillic');
             return false;
         }
@@ -227,12 +229,12 @@ class TypicalUserValidator implements UserValidator
     {
         $key = 'last_name';
         $login = $this->getLogin($user);
-        if(empty($user[$key])) {
+        if (empty($user[$key])) {
             $this->validationCollector->addError($index, $login, $key, 'Last name required');
             return false;
         }
 
-        if(!$this->isCyrillic($user[$key])) {
+        if (!$this->isCyrillic($user[$key])) {
             $this->validationCollector->addError($index, $login, $key, 'Last name must be cyrillic');
             return false;
         }
@@ -256,7 +258,7 @@ class TypicalUserValidator implements UserValidator
         }
 
         $phone = $user[$key];
-        if(!is_numeric($phone)) {
+        if (!is_numeric($phone)) {
             $this->validationCollector->addError($index, $login, $key, 'Phone is required only numbers');
             return false;
         }
@@ -267,7 +269,7 @@ class TypicalUserValidator implements UserValidator
             return false;
         }
 
-        if($length > 16) {
+        if ($length > 16) {
             $this->validationCollector->addError($index, $login, $key, 'Phone number must be max 16 numbers');
             return false;
         }
@@ -285,17 +287,17 @@ class TypicalUserValidator implements UserValidator
         $key = 'email';
         $login = $this->getLogin($user);
 
-        if(!array_key_exists($key, $user)) {
+        if (!array_key_exists($key, $user)) {
             $this->validationCollector->addError($index, $login, $key, 'Email required');
             return false;
         }
 
         //email is optional
-        if(empty($user[$key])) {
+        if (empty($user[$key])) {
             return true;
         }
 
-        if(!filter_var($user[$key], FILTER_VALIDATE_EMAIL)) {
+        if (!filter_var($user[$key], FILTER_VALIDATE_EMAIL)) {
             $this->validationCollector->addError($index, $login, $key, 'Email is not valid');
             return false;
         }
@@ -314,8 +316,13 @@ class TypicalUserValidator implements UserValidator
         $login = $this->getLogin($user);
         foreach (self::GROUPS as $requiredGroup) {
             $group = $user['groups'][$requiredGroup] ?? null;
-            if(empty($group)) {
-                $this->validationCollector->addError($index, $login,'groups', sprintf('Group %s is required and not blank', $requiredGroup));
+            if (empty($group)) {
+                $this->validationCollector->addError(
+                    $index,
+                    $login,
+                    'groups',
+                    sprintf('Group %s is required and not blank', $requiredGroup)
+                );
                 $isGroupValid = false;
             }
         }

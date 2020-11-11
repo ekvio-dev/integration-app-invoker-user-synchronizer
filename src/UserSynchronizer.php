@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Ekvio\Integration\Invoker;
@@ -52,8 +53,8 @@ class UserSynchronizer implements Invoker
         UserFactory $userFactory,
         UserValidator $validator,
         User $userSync,
-        Profiler $profiler)
-    {
+        Profiler $profiler
+    ) {
         $this->userCollector = $userCollector;
         $this->userFactory = $userFactory;
         $this->validator = $validator;
@@ -90,7 +91,7 @@ class UserSynchronizer implements Invoker
      */
     private function syncUsers(UserPipelineData $pipelineData): UserPipelineData
     {
-        if($pipelineData->data()) {
+        if ($pipelineData->data()) {
             $this->profiler->profile(sprintf('Synchronize %s users...', count($pipelineData->data())));
 
             $userDataKeyMap = [];
@@ -105,7 +106,7 @@ class UserSynchronizer implements Invoker
             $this->profiler->profile(sprintf('Get %s logs from Equeo...', count($syncResults)));
 
             foreach ($syncResults as $result) {
-                if(isset($result['index']) && is_numeric($result['index'])) {
+                if (isset($result['index']) && is_numeric($result['index'])) {
                     $result['index'] = $userDataKeyMap[$result['index']];
                 }
 

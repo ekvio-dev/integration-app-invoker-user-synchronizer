@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Ekvio\Integration\Invoker;
@@ -24,7 +25,9 @@ class UserSyncData implements UserData
      * UserData constructor.
      */
 
-    private function __construct(){}
+    private function __construct()
+    {
+    }
 
     /**
      * UserData named constructor

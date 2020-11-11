@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Ekvio\Integration\Invoker\UserValidation;
@@ -39,7 +40,7 @@ class UserValidationCollector
      */
     public function addError(string $index, ?string $login, string $field, string $message): void
     {
-        if(isset($this->errors[$index])) {
+        if (isset($this->errors[$index])) {
             $this->errors[$index]['errors'][] = [
                 'code' => self::ERROR_CODE,
                 'field' => $field,

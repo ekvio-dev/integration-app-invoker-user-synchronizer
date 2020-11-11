@@ -154,22 +154,22 @@ class TypicalUserValidationTest extends TestCase
     public function testUserValidationModifications()
     {
         $validator = new TypicalUserValidator([
-            'loginValidator' => static function() {
+            'loginValidator' => function() {
                 return true;
             },
-            'firstNameValidator' => static function() {
+            'firstNameValidator' => function() {
                 return true;
             },
-            'lastNameValidator' => static function() {
+            'lastNameValidator' => function() {
                 return true;
             },
-            'phoneValidator' => static function() {
+            'phoneValidator' => function() {
                 return true;
             },
-            'emailValidator' => static function() {
+            'emailValidator' => function() {
                 return true;
             },
-            'groupsValidator' => static function() {
+            'groupsValidator' => function() {
                 return true;
             },
         ]);
