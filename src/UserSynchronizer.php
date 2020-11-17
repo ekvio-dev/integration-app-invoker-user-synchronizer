@@ -66,6 +66,8 @@ class UserSynchronizer implements Invoker
      */
     public function __invoke(array $arguments = [])
     {
+        $syncConfig = $arguments['parameters']['syncConfig'] ?? [];
+
         $this->profiler->profile('Begin collecting data...');
         /** @var UserPipelineData $userSyncPipelineData */
         $userSyncPipelineData = $this->userCollector->collect();
@@ -79,7 +81,7 @@ class UserSynchronizer implements Invoker
         $userSyncPipelineData = $this->validator->validate($userSyncPipelineData);
         $this->profiler->profile(sprintf('Valid %s users...', count($userSyncPipelineData->data())));
 
-        $userSyncPipelineData = $this->syncUsers($userSyncPipelineData);
+        $userSyncPipelineData = $this->syncUsers($userSyncPipelineData, $syncConfig);
         $this->profiler->profile(sprintf('Summary %s logs...', count($userSyncPipelineData->logs())));
 
         return $userSyncPipelineData;
@@ -87,9 +89,10 @@ class UserSynchronizer implements Invoker
 
     /**
      * @param UserPipelineData $pipelineData
+     * @param array $config
      * @return UserPipelineData
      */
-    private function syncUsers(UserPipelineData $pipelineData): UserPipelineData
+    private function syncUsers(UserPipelineData $pipelineData, array $config = []): UserPipelineData
     {
         if ($pipelineData->data()) {
             $this->profiler->profile(sprintf('Synchronize %s users...', count($pipelineData->data())));
@@ -102,7 +105,7 @@ class UserSynchronizer implements Invoker
                 $users[] = $userData->data();
             }
 
-            $syncResults = $this->equeoUserApi->sync($users);
+            $syncResults = $this->equeoUserApi->sync($users, $config);
             $this->profiler->profile(sprintf('Get %s logs from Equeo...', count($syncResults)));
 
             foreach ($syncResults as $result) {

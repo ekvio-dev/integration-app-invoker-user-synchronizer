@@ -13,7 +13,7 @@ use Ekvio\Integration\Sdk\V2\User\UserSearchCriteria;
  */
 class UserApiDummy implements User
 {
-    public function sync(array $users): array
+    public function sync(array $users, array $config = []): array
     {
         return [
             [
