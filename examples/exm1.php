@@ -129,6 +129,16 @@ class DumpProfiler implements Profiler
     }
 }
 
+class EmailBuilder
+{
+    public function __invoke(string $source, string $index, array $user)
+    {
+        return 'aaa@dev.ru';
+    }
+}
+
+$emailBuilder = new EmailBuilder();
+
 $httpClient = new Client([
     'headers' => [
         'Accept' => 'application/json',
@@ -147,7 +157,9 @@ $prior = 'hr.csv';
         $prior => new Extractor1($prior)
     ]),
     new TypicalUserFactory([
-        'emailBuilder' => function (string $index, array $user) {
+        'emailBuilder' => function (string $source, string $index, array $user) use ($emailBuilder) {
+
+            $email = ($emailBuilder)($source, $index, $user);
             return sprintf('%s@dev.dev', $user[$this->attributes['login']]);
         }
     ]),
