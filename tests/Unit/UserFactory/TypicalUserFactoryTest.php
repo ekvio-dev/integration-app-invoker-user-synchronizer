@@ -14,9 +14,13 @@ use PHPUnit\Framework\TestCase;
  */
 class TypicalUserFactoryTest extends TestCase
 {
-    private function user(): array
+    /**
+     * @param bool $withPassword
+     * @return string[]
+     */
+    private function user($withPassword = false): array
     {
-        return [
+        $user = [
             'USR_LOGIN' => 'test',
             'USR_FIRST_NAME' => 'ivan',
             'USR_LAST_NAME' => 'ivanov',
@@ -32,6 +36,12 @@ class TypicalUserFactoryTest extends TestCase
             'DEPARTAMENT_NAME' => 'department',
             'ASSIGNMENT_NAME' => 'assignment',
         ];
+
+        if($withPassword) {
+            $user['PASSWORD'] = 'ABCxyz';
+        }
+
+        return $user;
     }
 
     private function buildPipeline(array $data): UserSyncPipelineData
@@ -52,6 +62,15 @@ class TypicalUserFactoryTest extends TestCase
     {
         $factory = (new TypicalUserFactory())->build($this->buildPipeline([['login' => 'test', 'first_name' => 'Ivan']]));
         $this->assertCount(1, $factory->data());
+    }
+
+    public function testRightSourceName()
+    {
+        $pipeline = $this->buildPipeline([['login' => '']]);
+        $factory = (new TypicalUserFactory())->build($pipeline);
+        /** @var UserSyncData $user */
+        $user = $factory->data()[0];
+        $this->assertEquals('test', $factory->sourceName($user->key()));
     }
 
     public function testBuildUserFromDefaultMap()
@@ -370,5 +389,49 @@ class TypicalUserFactoryTest extends TestCase
                 'assignment' => null,
             ]
         ], $user->data());
+    }
+
+    public function testBuildUserWithPassword()
+    {
+        $user = $this->user(true);
+        $factory = (new TypicalUserFactory())
+            ->build($this->buildPipeline([$user]));
+
+        /** @var UserSyncData $user */
+        $user = $factory->data()[0];
+        $this->assertArrayHasKey('password', $user->data());
+    }
+
+    public function testBuildUserWithPasswordBuilder()
+    {
+        $user = $this->user(true);
+        $factory = (new TypicalUserFactory([
+            'passwordBuilder' => function(string $source, string $index, array $data) {
+                return $data['PASSWORD'] . '_123456';
+            }
+        ]))->build($this->buildPipeline([$user]));
+
+        /** @var UserSyncData $user */
+        $user = $factory->data()[0];
+        $this->assertArrayHasKey('password', $user->data());
+        $this->assertEquals('ABCxyz_123456', $user->data()['password']);
+    }
+
+    public function testBuildUserWithNoPasswordBySource()
+    {
+        $user = $this->user(true);
+        $factory = (new TypicalUserFactory([
+            'passwordBuilder' => function(string $source, string $index, array $data) {
+                if($source === 'test') {
+                    return null;
+                }
+
+                return $data['PASSWORD'];
+            }
+        ]))->build($this->buildPipeline([$user]));
+        /** @var UserSyncData $user */
+        $user = $factory->data()[0];
+
+        $this->assertArrayNotHasKey('password', $user->data());
     }
 }

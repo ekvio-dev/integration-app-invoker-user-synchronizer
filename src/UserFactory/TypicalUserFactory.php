@@ -33,6 +33,7 @@ class TypicalUserFactory implements UserFactory
         'last_name' => 'USR_LAST_NAME',
         'phone' => 'USR_MOBILE',
         'email' => 'USR_EMAIL',
+        'password' => 'PASSWORD',
         'chief_email' => 'MANAGER_EMAIL',
         'status' => 'USR_UDF_USER_FIRED',
         'groups.region' => 'REGION_NAME',
@@ -100,6 +101,10 @@ class TypicalUserFactory implements UserFactory
      * @var Closure
      */
     private $phoneBuilder;
+    /**
+     * @var Closure
+     */
+    private $passwordBuilder;
     /**
      * @var Closure
      */
@@ -200,6 +205,10 @@ class TypicalUserFactory implements UserFactory
             $this->phoneBuilder = $options['phoneBuilder'];
         }
 
+        if (isset($options['passwordBuilder']) && is_callable($options['passwordBuilder'])) {
+            $this->passwordBuilder = $options['passwordBuilder'];
+        }
+
         if (isset($options['verifiedEmailBuilder']) && is_callable($options['verifiedEmailBuilder'])) {
             $this->verifiedEmailBuilder = $options['verifiedEmailBuilder'];
         }
@@ -274,6 +283,7 @@ class TypicalUserFactory implements UserFactory
 
         $data = [];
         foreach ($pipelineData->data() as $userData) {
+            /** @var UserData $userData */
             if ($this->beforeUserBuild) {
                 $userData = ($this->beforeUserBuild)($userData);
             }
@@ -282,7 +292,8 @@ class TypicalUserFactory implements UserFactory
                 continue;
             }
 
-            $data[] = $this->buildUser($userData);
+            $source = $pipelineData->sourceName($userData->key());
+            $data[] = $this->buildUser($source, $userData);
         }
 
         if ($this->afterBuild) {
@@ -293,70 +304,79 @@ class TypicalUserFactory implements UserFactory
     }
 
     /**
+     * @param string $source
      * @param UserData $userData
      * @return UserData
      */
-    protected function buildUser(UserData $userData): UserData
+    protected function buildUser(string $source, UserData $userData): UserData
     {
         $index = $userData->key();
         $user = $userData->data();
 
-        $email = $this->emailBuilder ? $this->emailBuilder->call($this, $index, $user) : $this->buildEmail($user);
-        $phone = $this->phoneBuilder ? $this->phoneBuilder->call($this, $index, $user) : $this->buildPhone($user);
+        $email = $this->emailBuilder ? $this->emailBuilder->call($this, $source, $index, $user) : $this->buildEmail($user);
+        $phone = $this->phoneBuilder ? $this->phoneBuilder->call($this, $source, $index, $user) : $this->buildPhone($user);
 
         $data = [
             'login' => $this->loginBuilder
-                ? $this->loginBuilder->call($this, $index, $user)
+                ? $this->loginBuilder->call($this, $source, $index, $user)
                 : $this->buildLogin($user),
             'first_name' => $this->firstNameBuilder
-                ? $this->firstNameBuilder->call($this, $index, $user)
+                ? $this->firstNameBuilder->call($this, $source, $index, $user)
                 : $this->buildFirstName($user),
             'last_name' => $this->lastNameBuilder
-                ? $this->lastNameBuilder->call($this, $index, $user)
+                ? $this->lastNameBuilder->call($this, $source, $index, $user)
                 : $this->buildLastName($user),
             'email' => $email,
             'phone' => $phone,
             'verified_email' => $this->verifiedEmailBuilder
-                ? (bool) $this->verifiedEmailBuilder->call($this, $index, $user)
+                ? (bool) $this->verifiedEmailBuilder->call($this, $source, $index, $user)
                 : $this->buildVerifiedEmail($email),
             'verified_phone' => $this->verifiedPhoneBuilder
-                ? (bool) $this->verifiedPhoneBuilder->call($this, $index, $user)
+                ? (bool) $this->verifiedPhoneBuilder->call($this, $source, $index, $user)
                 : $this->buildVerifiedPhone($phone),
             'chief_email' => $this->chiefEmailBuilder
-                ? $this->chiefEmailBuilder->call($this, $index, $user)
+                ? $this->chiefEmailBuilder->call($this, $source, $index, $user)
                 : $this->buildChiefEmail($user),
             'status' => $this->statusBuilder
-                ? $this->statusBuilder->call($this, $index, $user)
+                ? $this->statusBuilder->call($this, $source, $index, $user)
                 : $this->buildStatus($user),
             'groups' => [
                 'region' => $this->groupRegionBuilder
-                    ? $this->groupRegionBuilder->call($this, $index, $user)
+                    ? $this->groupRegionBuilder->call($this, $source, $index, $user)
                     : $this->buildGroup('groups.region', $user),
                 'city' => $this->groupCityBuilder
-                    ? $this->groupCityBuilder->call($this, $index, $user)
+                    ? $this->groupCityBuilder->call($this, $source, $index, $user)
                     : $this->buildGroup('groups.city', $user),
                 'role' => $this->groupRoleBuilder
-                    ? $this->groupRoleBuilder->call($this, $index, $user)
+                    ? $this->groupRoleBuilder->call($this, $source, $index, $user)
                     : $this->buildGroup('groups.role', $user),
                 'position' => $this->groupPositionBuilder
-                    ? $this->groupPositionBuilder->call($this, $index, $user)
+                    ? $this->groupPositionBuilder->call($this, $source, $index, $user)
                     : $this->buildGroup('groups.position', $user),
                 'team' => $this->groupTeamBuilder
-                    ? $this->groupTeamBuilder->call($this, $index, $user)
+                    ? $this->groupTeamBuilder->call($this, $source, $index, $user)
                     : $this->buildGroup('groups.team', $user),
                 'department' => $this->groupDepartmentBuilder
-                    ? $this->groupDepartmentBuilder->call($this, $index, $user)
+                    ? $this->groupDepartmentBuilder->call($this, $source, $index, $user)
                     : $this->buildGroup('groups.department', $user),
                 'assignment' => $this->groupAssignmentBuilder
-                    ? $this->groupAssignmentBuilder->call($this, $index, $user)
+                    ? $this->groupAssignmentBuilder->call($this, $source, $index, $user)
                     : $this->buildGroup('groups.assignment', $user)
             ]
         ];
 
+        $password = $this->passwordBuilder
+            ? $this->passwordBuilder->call($this, $source, $index, $user)
+            : $this->buildPassword($user);
+
+        if($password) {
+            $data['password'] = $password;
+        }
+
         if ($this->forms) {
             $forms = $this->forms;
             if ($this->buildForms) {
-                $forms = $this->buildForms->call($this, $index, $user, $forms);
+                $forms = $this->buildForms->call($this, $source, $index, $user, $forms);
             } else {
                 foreach ($this->forms as $id => $form) {
                     $forms[(string) $id] = $user[$form] ?? self::DEFAULT_FORM_VALUE;
@@ -479,6 +499,20 @@ class TypicalUserFactory implements UserFactory
     {
         $status = $user[$this->attributes['status']] ?? null;
         return $status === $this->activeStatus ? 'active' : 'blocked';
+    }
+
+    /**
+     * @param array $user
+     * @return string|null
+     */
+    private function buildPassword(array $user): ?string
+    {
+        $password = $user[$this->attributes['password']] ?? null;
+        if($password) {
+            return trim($password);
+        }
+
+        return $password;
     }
 
     /**
