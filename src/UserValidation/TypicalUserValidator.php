@@ -51,6 +51,10 @@ class TypicalUserValidator implements UserValidator
     /**
      * @var Closure
      */
+    private $chiefEmailValidator;
+    /**
+     * @var Closure
+     */
     private $groupsValidator;
 
     /**
@@ -81,6 +85,10 @@ class TypicalUserValidator implements UserValidator
 
         if (isset($options['emailValidator']) && is_callable($options['emailValidator'])) {
             $this->emailValidator = $options['emailValidator'];
+        }
+
+        if(isset($options['chiefEmailValidator']) && is_callable($options['chiefEmailValidator'])) {
+            $this->chiefEmailValidator = $options['chiefEmailValidator'];
         }
 
         if (isset($options['groupsValidator']) && is_callable($options['groupsValidator'])) {
@@ -144,6 +152,10 @@ class TypicalUserValidator implements UserValidator
         $results[] = $this->emailValidator
             ? (bool) $this->emailValidator->call($this, $source, $index, $user)
             : $this->isValidEmail($source, $index, $user);
+
+        $results[] = $this->chiefEmailValidator
+            ? (bool) $this->chiefEmailValidator->call($this, $source, $index, $user)
+            : $this->isValidChiefEmail($source, $index, $user);
 
         $results[] = $this->groupsValidator
             ? (bool) $this->groupsValidator->call($this, $source, $index, $user)
@@ -302,6 +314,23 @@ class TypicalUserValidator implements UserValidator
         }
 
         //email is optional
+        if (empty($user[$key])) {
+            return true;
+        }
+
+        if (!filter_var($user[$key], FILTER_VALIDATE_EMAIL)) {
+            $this->validationCollector->addError($index, $login, $key, 'Email is not valid');
+            return false;
+        }
+
+        return true;
+    }
+
+    protected function isValidChiefEmail(string $source, string $index, array $user): bool
+    {
+        $key = 'chief_email';
+        $login = $this->getLogin($user);
+
         if (empty($user[$key])) {
             return true;
         }

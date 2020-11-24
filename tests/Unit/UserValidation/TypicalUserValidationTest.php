@@ -195,4 +195,15 @@ class TypicalUserValidationTest extends TestCase
         $this->assertCount(1, $result->data());
         $this->assertCount(0, $result->logs());
     }
+
+    public function testChiefEmailValidation()
+    {
+        $validator = new TypicalUserValidator();
+        $user = $this->user();
+        $user['chief_email'] = 'not_valid_email';
+
+        $result = $validator->validate($this->buildPipeline([$user]));
+        $this->assertCount(0, $result->data());
+        $this->assertCount(1, $result->logs());
+    }
 }
