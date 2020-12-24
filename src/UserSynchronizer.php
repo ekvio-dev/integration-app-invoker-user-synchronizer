@@ -18,27 +18,27 @@ use Ekvio\Integration\Sdk\V2\User\User;
  */
 class UserSynchronizer implements Invoker
 {
-    private const NAME = 'Synchronize users';
+    protected const NAME = 'Synchronize users';
     /**
      * @var Collector
      */
-    private $userCollector;
+    protected $userCollector;
     /**
      * @var UserFactory
      */
-    private $userFactory;
+    protected $userFactory;
     /**
      * @var UserValidator
      */
-    private $validator;
+    protected $validator;
     /**
      * @var User
      */
-    private $equeoUserApi;
+    protected $equeoUserApi;
     /**
      * @var Profiler
      */
-    private $profiler;
+    protected $profiler;
 
     /**
      * UserSynchronizer constructor.
@@ -92,7 +92,7 @@ class UserSynchronizer implements Invoker
      * @param array $config
      * @return UserPipelineData
      */
-    private function syncUsers(UserPipelineData $pipelineData, array $config = []): UserPipelineData
+    protected function syncUsers(UserPipelineData $pipelineData, array $config = []): UserPipelineData
     {
         if ($pipelineData->data()) {
             $this->profiler->profile(sprintf('Synchronize %s users...', count($pipelineData->data())));

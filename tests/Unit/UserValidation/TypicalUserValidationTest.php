@@ -151,6 +151,30 @@ class TypicalUserValidationTest extends TestCase
         $this->assertCount(1, $result->logs());
     }
 
+    public function testZeroNameGroupValidation()
+    {
+        $users = [[
+            'login' => 'test',
+            'first_name' => 'Дмитрий',
+            'last_name' => 'Иванов',
+            'phone' => '79275000000',
+            'email' => null,
+            'groups' => [
+                'region' => '0',
+                'city' => '0',
+                'role' => '0',
+                'position' => '0',
+                'team' => '0',
+                'department' => '0',
+                'assignment' => '0',
+            ]
+        ]];
+        $validator = new TypicalUserValidator();
+        $result = $validator->validate($this->buildPipeline($users));
+        $this->assertCount(1, $result->data());
+        $this->assertCount(0, $result->logs());
+    }
+
     public function testUserValidationModifications()
     {
         $validator = new TypicalUserValidator([

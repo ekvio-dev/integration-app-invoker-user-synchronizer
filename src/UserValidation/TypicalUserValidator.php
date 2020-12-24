@@ -15,47 +15,47 @@ use Ekvio\Integration\Invoker\UserSyncPipelineData;
  */
 class TypicalUserValidator implements UserValidator
 {
-    private const GROUPS = ['region', 'city', 'role', 'position', 'team', 'department', 'assignment'];
+    protected const GROUPS = ['region', 'city', 'role', 'position', 'team', 'department', 'assignment'];
     /**
      * @var UserValidationCollector
      */
-    private $validationCollector;
+    protected $validationCollector;
     /**
      * @var Closure
      */
-    private $loginValidator;
+    protected $loginValidator;
     /**
      * @var array
      */
-    private $loginCollection = [];
+    protected $loginCollection = [];
     /**
      * @var Closure
      */
-    private $loginCollectionValidator;
+    protected $loginCollectionValidator;
     /**
      * @var Closure
      */
-    private $firstNameValidator;
+    protected $firstNameValidator;
     /**
      * @var Closure
      */
-    private $lastNameValidator;
+    protected $lastNameValidator;
     /**
      * @var Closure
      */
-    private $phoneValidator;
+    protected $phoneValidator;
     /**
      * @var Closure
      */
-    private $emailValidator;
+    protected $emailValidator;
     /**
      * @var Closure
      */
-    private $chiefEmailValidator;
+    protected $chiefEmailValidator;
     /**
      * @var Closure
      */
-    private $groupsValidator;
+    protected $groupsValidator;
 
     /**
      * TypicalUserValidator constructor.
@@ -355,7 +355,20 @@ class TypicalUserValidator implements UserValidator
         $login = $this->getLogin($user);
         foreach (self::GROUPS as $requiredGroup) {
             $group = $user['groups'][$requiredGroup] ?? null;
-            if (empty($group)) {
+
+            if(is_null($group)) {
+                $this->validationCollector->addError(
+                    $index,
+                    $login,
+                    'groups',
+                    sprintf('Group %s is required and not blank', $requiredGroup)
+                );
+                $isGroupValid = false;
+                continue;
+            }
+
+            $groupName = mb_strlen($group);
+            if ($groupName === 0) {
                 $this->validationCollector->addError(
                     $index,
                     $login,
