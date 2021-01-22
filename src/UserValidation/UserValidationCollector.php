@@ -37,14 +37,16 @@ class UserValidationCollector
      * @param string|null $login
      * @param string $field
      * @param string $message
+     * @param string|null $extra
      */
-    public function addError(string $index, ?string $login, string $field, string $message): void
+    public function addError(string $index, ?string $login, string $field, string $message, ?string $extra = null): void
     {
         if (isset($this->errors[$index])) {
             $this->errors[$index]['errors'][] = [
                 'code' => self::ERROR_CODE,
                 'field' => $field,
-                'message' => $message
+                'message' => $message,
+                'extra' => $extra
             ];
         } else {
             $this->errors[$index] = [
@@ -55,7 +57,8 @@ class UserValidationCollector
                     [
                         'code' => self::ERROR_CODE,
                         'field' => $field,
-                        'message' => $message
+                        'message' => $message,
+                        'extra' => $extra
                     ]
                 ]
             ];

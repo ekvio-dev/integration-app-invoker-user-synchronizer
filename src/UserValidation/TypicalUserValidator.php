@@ -163,7 +163,7 @@ class TypicalUserValidator implements UserValidator
 
         if ($this->isValid($results)) {
             $this->validationCollector->addValid($userData);
-            $this->loginCollection[] = $user['login'];
+            $this->loginCollection[$user['login']] = $source;
         }
     }
 
@@ -207,8 +207,10 @@ class TypicalUserValidator implements UserValidator
      */
     protected function isLoginAlreadyExist(string $source, string $index, array $user): bool
     {
-        if (!empty($user['login']) && in_array($user['login'], $this->loginCollection, true)) {
-            $this->validationCollector->addError($index, $user['login'], 'login', 'Login already exists');
+        if (!empty($user['login']) && isset($this->loginCollection[$user['login']])) {
+            $originalSource = $this->loginCollection[$user['login']];
+            $this->validationCollector->addError(
+                $index, $user['login'], 'login', 'Login already exists', $originalSource);
             return false;
         }
 

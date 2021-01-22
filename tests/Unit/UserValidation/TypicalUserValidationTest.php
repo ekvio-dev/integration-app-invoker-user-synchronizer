@@ -230,4 +230,57 @@ class TypicalUserValidationTest extends TestCase
         $this->assertCount(0, $result->data());
         $this->assertCount(1, $result->logs());
     }
+
+    public function testLoginDuplicateValidation()
+    {
+        $source1 = [
+            [
+                'login' => 'test',
+                'first_name' => 'Дмитрий',
+                'last_name' => 'Иванов',
+                'phone' => '79275000000',
+                'email' => null,
+                'groups' => [
+                    'region' => 'region',
+                    'city' => 'city',
+                    'role' => 'role',
+                    'position' => 'position',
+                    'team' => 'team',
+                    'department' => 'department',
+                    'assignment' => 'assignment',
+                ]
+            ]
+        ];
+        $source2 =[
+            [
+                'login' => 'test',
+                'first_name' => 'Андрей',
+                'last_name' => 'Петров',
+                'phone' => '79275000001',
+                'email' => null,
+                'groups' => [
+                    'region' => 'region',
+                    'city' => 'city',
+                    'role' => 'role',
+                    'position' => 'position',
+                    'team' => 'team',
+                    'department' => 'department',
+                    'assignment' => 'assignment',
+                ]
+            ]
+        ];
+
+        $pipeline = new UserSyncPipelineData();
+        $pipeline->addSource('source-1', $source1);
+        $pipeline->addSource('source-2', $source2);
+
+        $result = (new TypicalUserValidator())->validate($pipeline);
+        $this->assertCount(1, $result->data());
+        $this->assertCount(1, $result->logs());
+
+        $error = $result->logs()[0]['errors'][0];
+        $this->assertArrayHasKey('extra', $error);
+        $this->assertEquals('Login already exists', $error['message']);
+        $this->assertEquals('source-1', $error['extra']);
+    }
 }

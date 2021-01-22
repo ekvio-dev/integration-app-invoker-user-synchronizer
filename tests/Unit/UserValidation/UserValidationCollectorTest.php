@@ -52,8 +52,8 @@ class UserValidationCollectorTest extends TestCase
                 'login' => 'test',
                 'status' => 'error',
                 'errors' => [
-                    ['code' => 1007, 'field' => 'phone', 'message' => 'Invalid phone'],
-                    ['code' => 1007, 'field' => 'phone', 'message' => 'Bad count symbols'],
+                    ['code' => 1007, 'field' => 'phone', 'message' => 'Invalid phone', 'extra' => null],
+                    ['code' => 1007, 'field' => 'phone', 'message' => 'Bad count symbols', 'extra' => null],
                 ]
             ],
             $error
