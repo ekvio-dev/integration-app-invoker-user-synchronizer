@@ -147,8 +147,8 @@ class TypicalUserValidationTest extends TestCase
 
         unset($user['groups']['region']);
         $result = $validator->validate($this->buildPipeline([$user]));
-        $this->assertCount(0, $result->data());
-        $this->assertCount(1, $result->logs());
+        $this->assertCount(1, $result->data());
+        $this->assertCount(0, $result->logs());
     }
 
     public function testZeroNameGroupValidation()

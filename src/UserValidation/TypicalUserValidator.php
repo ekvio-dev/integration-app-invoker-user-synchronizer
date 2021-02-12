@@ -356,6 +356,10 @@ class TypicalUserValidator implements UserValidator
         $isGroupValid = true;
         $login = $this->getLogin($user);
         foreach (self::GROUPS as $requiredGroup) {
+            if(!array_key_exists($requiredGroup, $user['groups'])) {
+                continue;
+            }
+
             $group = $user['groups'][$requiredGroup] ?? null;
 
             if(is_null($group)) {
@@ -369,8 +373,7 @@ class TypicalUserValidator implements UserValidator
                 continue;
             }
 
-            $groupName = mb_strlen($group);
-            if ($groupName === 0) {
+            if (mb_strlen($group) === 0) {
                 $this->validationCollector->addError(
                     $index,
                     $login,

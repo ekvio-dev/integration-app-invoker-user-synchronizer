@@ -24,6 +24,7 @@ class TypicalUserFactory implements UserFactory
     protected const DEFAULT_ASSIGNMENT = 'Demo assignment';
     protected const DEFAULT_FORM_VALUE = null;
     protected const USER_ACTIVE = '0';
+    protected const GROUPS = ['region', 'city', 'role', 'position', 'team', 'department', 'assignment'];
     /**
      * @var array
      */
@@ -157,7 +158,7 @@ class TypicalUserFactory implements UserFactory
     /**
      * @var bool
      */
-    private $useGroupDefaults = true;
+    private $useGroupDefaults = false;
 
     /**
      * TypicalUserFactory constructor.
@@ -339,30 +340,7 @@ class TypicalUserFactory implements UserFactory
                 : $this->buildChiefEmail($user),
             'status' => $this->statusBuilder
                 ? $this->statusBuilder->call($this, $source, $index, $user)
-                : $this->buildStatus($user),
-            'groups' => [
-                'region' => $this->groupRegionBuilder
-                    ? $this->groupRegionBuilder->call($this, $source, $index, $user)
-                    : $this->buildGroup('groups.region', $user),
-                'city' => $this->groupCityBuilder
-                    ? $this->groupCityBuilder->call($this, $source, $index, $user)
-                    : $this->buildGroup('groups.city', $user),
-                'role' => $this->groupRoleBuilder
-                    ? $this->groupRoleBuilder->call($this, $source, $index, $user)
-                    : $this->buildGroup('groups.role', $user),
-                'position' => $this->groupPositionBuilder
-                    ? $this->groupPositionBuilder->call($this, $source, $index, $user)
-                    : $this->buildGroup('groups.position', $user),
-                'team' => $this->groupTeamBuilder
-                    ? $this->groupTeamBuilder->call($this, $source, $index, $user)
-                    : $this->buildGroup('groups.team', $user),
-                'department' => $this->groupDepartmentBuilder
-                    ? $this->groupDepartmentBuilder->call($this, $source, $index, $user)
-                    : $this->buildGroup('groups.department', $user),
-                'assignment' => $this->groupAssignmentBuilder
-                    ? $this->groupAssignmentBuilder->call($this, $source, $index, $user)
-                    : $this->buildGroup('groups.assignment', $user)
-            ]
+                : $this->buildStatus($user)
         ];
 
         $password = $this->passwordBuilder
@@ -372,6 +350,8 @@ class TypicalUserFactory implements UserFactory
         if($password) {
             $data['password'] = $password;
         }
+
+        $data['groups'] = $this->buildGroups($source, $index, $user);
 
         if ($this->forms) {
             $forms = $this->forms;
@@ -516,6 +496,29 @@ class TypicalUserFactory implements UserFactory
     }
 
     /**
+     * @param string $source
+     * @param string $index
+     * @param array $user
+     * @return array
+     */
+    protected function buildGroups(string $source, string $index, array $user): array
+    {
+        $groups = [];
+        foreach (self::GROUPS as $group) {
+            $groupBuilderMethod = 'group' . ucfirst($group) . 'Builder';
+            $groupValue = $this->$groupBuilderMethod
+                ? $this->$groupBuilderMethod->call($this, $source, $index, $user)
+                : $this->buildGroup('groups.' . $group, $user);
+
+            if(is_string($groupValue) && mb_strlen($groupValue) > 0) {
+                $groups[$group] = $groupValue;
+            }
+        }
+
+        return $groups;
+    }
+
+    /**
      * @param string $type
      * @param array $user
      * @return null|string
@@ -523,14 +526,14 @@ class TypicalUserFactory implements UserFactory
     protected function buildGroup(string $type, array $user): ?string
     {
         $group = $user[$this->attributes[$type]] ?? null;
-        if ($group) {
-            return trim($group);
+        if (is_null($group) || $group === '') {
+            if ($this->useGroupDefaults) {
+                return $this->groupDefaults[$type];
+            }
+
+            return null;
         }
 
-        if ($this->useGroupDefaults) {
-            return $this->groupDefaults[$type];
-        }
-
-        return null;
+        return trim(str_replace(' ', ' ', (string) $group));
     }
 }
