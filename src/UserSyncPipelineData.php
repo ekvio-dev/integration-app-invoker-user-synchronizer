@@ -28,6 +28,8 @@ class UserSyncPipelineData implements UserPipelineData
      */
     private $log = [];
 
+    private $mappedErrorsForUsers = [];
+
     /**
      * @var string
      */
@@ -55,6 +57,7 @@ class UserSyncPipelineData implements UserPipelineData
         $self = new self();
         $self->sources = $this->sources;
         $self->log = $this->log;
+        $self->mappedErrorsForUsers = $this->mappedErrorsForUsers;
         $self->data = $usersData;
 
         return $self;
@@ -88,7 +91,24 @@ class UserSyncPipelineData implements UserPipelineData
      */
     public function addLog(array $log): void
     {
-        $this->log[] = $log;
+        $index = $log['index'];
+        $login = $log['login'];
+
+        $hashLogName = sprintf('%s_%s', $index, $login);
+        $mappedErrorsForUsers = $this->mappedErrorsForUsers;
+        if (!isset($mappedErrorsForUsers[$hashLogName])) {
+            $this->mappedErrorsForUsers[$hashLogName] = count($this->log);
+            $this->log[] = $log;
+        } else {
+            $previewIndex = $mappedErrorsForUsers[$hashLogName];
+            $previewLog = $this->log[$previewIndex];
+            $previewErrors = $previewLog['errors'];
+            foreach ($previewErrors as $previewError) {
+                $log['errors'][] = $previewError;
+            }
+
+            $this->log[$previewIndex] = $log;
+        }
     }
 
     /**
