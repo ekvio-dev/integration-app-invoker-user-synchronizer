@@ -88,7 +88,21 @@ class UserSyncPipelineData implements UserPipelineData
      */
     public function addLog(array $log): void
     {
-        $this->log[] = $log;
+        $index = $log['index'] ?? null;
+        $status = $log['status'] ?? null;
+        if(!$index || !$status) {
+            return;
+        }
+
+        $hash = $status . '_' . $index;
+        if(!isset($this->log[$hash])) {
+            $this->log[$hash] = $log;
+            return;
+        }
+
+        if($status === LogStatus::ERROR) {
+            $this->log[$hash]['errors'] = array_merge($this->log[$hash]['errors'], $log['errors']);
+        }
     }
 
     /**
@@ -104,7 +118,7 @@ class UserSyncPipelineData implements UserPipelineData
      */
     public function logs(): array
     {
-        return $this->log;
+        return array_values($this->log);
     }
 
     /**
