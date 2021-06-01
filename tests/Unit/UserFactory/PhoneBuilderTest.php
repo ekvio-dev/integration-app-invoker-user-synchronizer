@@ -15,6 +15,12 @@ class PhoneBuilderTest extends TestCase
     public function testBuildUserPhoneFromNoValidSymbols()
     {
         $phone = PhoneBuilder::build('abcdef');
+        $this->assertEquals('abcdef', $phone);
+
+        $phone = PhoneBuilder::build('abcdef234');
+        $this->assertEquals('abcdef234', $phone);
+
+        $phone = PhoneBuilder::build('');
         $this->assertNull($phone);
     }
 

@@ -16,11 +16,16 @@ class PhoneBuilder
      */
     public static function build(string $number): ?string
     {
-        $phone = (string) preg_replace('/[^0-9]/', '', $number);
-        if (empty($phone)) {
+        preg_match_all('/[^+0-9]+/', $number, $matches, PREG_SET_ORDER, 0);
+        if(count($matches) > 0) {
+            return $number;
+        }
+
+        if (empty($number)) {
             return null;
         }
 
+        $phone = (string) preg_replace('/[^0-9]/', '', $number);
         $symbols = strlen($phone);
         if ($symbols === 10) {
             $first = $phone[0];
