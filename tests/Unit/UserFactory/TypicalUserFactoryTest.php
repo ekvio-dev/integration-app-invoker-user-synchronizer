@@ -18,7 +18,7 @@ class TypicalUserFactoryTest extends TestCase
      * @param bool $withPassword
      * @return string[]
      */
-    private function user($withPassword = false): array
+    private function user(bool $withPassword = false): array
     {
         $user = [
             'USR_LOGIN' => 'test',
@@ -97,15 +97,8 @@ class TypicalUserFactoryTest extends TestCase
     {
         $factory = (new TypicalUserFactory([
             'useGroupDefaults' => true,
-            'groupDefaults' => [
-                'groups.region' => 'custom region',
-                'groups.city' => 'custom city',
-                'groups.role' => 'custom role',
-                'groups.position' => 'custom position',
-                'groups.team' => 'custom team',
-                'groups.department' => 'custom department',
-                'groups.assignment' => 'custom assignment',
-        ]]))->build($this->buildPipeline([['login' => '']]));
+            'groupDefaults' => ['region', 'city', 'role']
+        ]))->build($this->buildPipeline([['login' => '']]));
 
         /** @var UserSyncData $user */
         $user = $factory->data()[0];
@@ -121,13 +114,9 @@ class TypicalUserFactoryTest extends TestCase
             'chief_email' => null,
             'status' => 'blocked',
             'groups' => [
-                'region' => 'custom region',
-                'city' => 'custom city',
-                'role' => 'custom role',
-                'position' => 'custom position',
-                'team' => 'custom team',
-                'department' => 'custom department',
-                'assignment' => 'custom assignment',
+                ['path' => 'region'],
+                ['path' => 'city'],
+                ['path' => 'role']
             ]
         ], $user->data());
     }
@@ -149,13 +138,12 @@ class TypicalUserFactoryTest extends TestCase
             'chief_email' => 'manager@test.dev',
             'status' => 'active',
             'groups' => [
-                'region' => 'region',
-                'city' => 'city',
-                'role' => 'role',
-                'position' => 'position',
-                'team' => 'team',
-                'department' => 'department',
-                'assignment' => 'assignment',
+                ['path' => 'region'],
+                ['path' => 'role'],
+                ['path' => 'position'],
+                ['path' => 'team'],
+                ['path' => 'department'],
+                ['path' => 'assignment'],
             ]
         ], $user->data());
     }
@@ -171,6 +159,7 @@ class TypicalUserFactoryTest extends TestCase
         $user = $factory->data()[0];
 
         $this->assertEquals('active', $user->data()['status']);
+        $this->assertCount(6, $user->data()['groups']);
     }
 
     public function testBuildUserWithForms()
@@ -230,26 +219,10 @@ class TypicalUserFactoryTest extends TestCase
             'statusBuilder' => function() {
                 return 'blocked';
             },
-            'groupRegionBuilder' => function() {
-                return 'my.region';
-            },
-            'groupCityBuilder' => function() {
-                return 'my.city';
-            },
-            'groupRoleBuilder' => function() {
-                return 'my.role';
-            },
-            'groupPositionBuilder' => function() {
-                return 'my.position';
-            },
-            'groupTeamBuilder' => function() {
-                return 'my.team';
-            },
-            'groupDepartmentBuilder' => function() {
-                return 'my.department';
-            },
-            'groupAssignmentBuilder' => function() {
-                return 'my.assignment';
+            'groupsBuilder' => function() {
+                return [
+                    ['path' => 'Dynamic group']
+                ];
             },
         ]))->build($this->buildPipeline([$this->user()]));
         /** @var UserSyncData $user */
@@ -266,13 +239,7 @@ class TypicalUserFactoryTest extends TestCase
             'chief_email' => null,
             'status' => 'blocked',
             'groups' => [
-                'region' => 'my.region',
-                'city' => 'my.city',
-                'role' => 'my.role',
-                'position' => 'my.position',
-                'team' => 'my.team',
-                'department' => 'my.department',
-                'assignment' => 'my.assignment',
+                ['path' => 'Dynamic group']
             ]
         ], $user->data());
     }
@@ -325,15 +292,7 @@ class TypicalUserFactoryTest extends TestCase
             'verified_phone' => true,
             'chief_email' => 'manager@test.dev',
             'status' => 'active',
-            'groups' => [
-                'region' => 'Demo region',
-                'city' => 'Demo city',
-                'role' => 'Demo role',
-                'position' => 'Demo position',
-                'team' => 'Demo team',
-                'department' => 'Demo department',
-                'assignment' => 'Demo assignment',
-            ]
+            'groups' => []
         ], $user->data());
     }
 
@@ -446,13 +405,41 @@ class TypicalUserFactoryTest extends TestCase
             'chief_email' => 'manager@test.dev',
             'status' => 'active',
             'groups' => [
-                'city' => 'moscow',
-                'role' => '0',
-                'position' => '0',
-                'team' => '0',
-                'department' => '0',
-                'assignment' => 'assignment',
+                ['path' => '0'],
+                ['path' => '0'],
+                ['path' => '0'],
+                ['path' => '0'],
+                ['path' => 'assignment'],
             ]
+        ], $user->data());
+    }
+
+    public function testCallableAfterUserBuild()
+    {
+        $user = $this->user();
+
+        $factory = (new TypicalUserFactory([
+            'afterUserBuild' => function(string $source, string $index, array $user, array $data) {
+                $data['invited'] = true;
+                $data['groups'] = [];
+                return $data;
+            }
+        ]))->build($this->buildPipeline([$user]));
+        /** @var UserSyncData $user */
+        $user = $factory->data()[0];
+
+        $this->assertEquals([
+            'login' => 'test',
+            'first_name' => 'ivan',
+            'last_name' => 'ivanov',
+            'phone' => '79275000000',
+            'email' => 'test@test.dev',
+            'verified_email' => true,
+            'verified_phone' => true,
+            'chief_email' => 'manager@test.dev',
+            'status' => 'active',
+            'groups' => [],
+            'invited' => true
         ], $user->data());
     }
 }

@@ -15,16 +15,8 @@ use Ekvio\Integration\Invoker\UserSyncData;
  */
 class TypicalUserFactory implements UserFactory
 {
-    protected const DEFAULT_REGION = 'Demo region';
-    protected const DEFAULT_CITY = 'Demo city';
-    protected const DEFAULT_ROLE = 'Demo role';
-    protected const DEFAULT_POSITION = 'Demo position';
-    protected const DEFAULT_TEAM = 'Demo team';
-    protected const DEFAULT_DEPARTMENT = 'Demo department';
-    protected const DEFAULT_ASSIGNMENT = 'Demo assignment';
     protected const DEFAULT_FORM_VALUE = null;
     protected const USER_ACTIVE = '0';
-    protected const GROUPS = ['region', 'city', 'role', 'position', 'team', 'department', 'assignment'];
     /**
      * @var array
      */
@@ -37,24 +29,10 @@ class TypicalUserFactory implements UserFactory
         'password' => 'PASSWORD',
         'chief_email' => 'MANAGER_EMAIL',
         'status' => 'USR_UDF_USER_FIRED',
-        'groups.region' => 'REGION_NAME',
-        'groups.city' => 'CITY_NAME',
-        'groups.role' => 'ROLE',
-        'groups.position' => 'POSITION_NAME',
-        'groups.team' => 'TEAM_NAME',
-        'groups.department' => 'DEPARTAMENT_NAME',
-        'groups.assignment' => 'ASSIGNMENT_NAME',
+        'groups' => ['REGION_NAME', 'ROLE', 'POSITION_NAME', 'TEAM_NAME', 'DEPARTAMENT_NAME', 'ASSIGNMENT_NAME']
     ];
 
-    private $groupDefaults = [
-        'groups.region' => self::DEFAULT_REGION,
-        'groups.city' => self::DEFAULT_CITY,
-        'groups.role' => self::DEFAULT_ROLE,
-        'groups.position' => self::DEFAULT_POSITION,
-        'groups.team' => self::DEFAULT_TEAM,
-        'groups.department' => self::DEFAULT_DEPARTMENT,
-        'groups.assignment' => self::DEFAULT_ASSIGNMENT,
-    ];
+    private $groupDefaults = [];
 
     /**
      * @var array
@@ -80,6 +58,11 @@ class TypicalUserFactory implements UserFactory
      * @var Closure
      */
     private $afterBuild;
+
+    /**
+     * @var Closure
+     */
+    private $afterUserBuild;
 
     /**
      * @var Closure
@@ -125,33 +108,9 @@ class TypicalUserFactory implements UserFactory
     /**
      * @var Closure
      */
-    private $groupRegionBuilder;
+    private $groupsBuilder;
     /**
-     * @var Closure
-     */
-    private $groupCityBuilder;
-    /**
-     * @var Closure
-     */
-    private $groupRoleBuilder;
-    /**
-     * @var Closure
-     */
-    private $groupPositionBuilder;
-    /**
-     * @var Closure
-     */
-    private $groupTeamBuilder;
-    /**
-     * @var Closure
-     */
-    private $groupDepartmentBuilder;
-    /**
-     * @var Closure
-     */
-    private $groupAssignmentBuilder;
-    /**
-     * @var Closure
+     * @var string
      */
     private $activeStatus = self::USER_ACTIVE;
 
@@ -184,6 +143,10 @@ class TypicalUserFactory implements UserFactory
 
         if (isset($options['afterBuild']) && is_callable($options['afterBuild'])) {
             $this->afterBuild = $options['afterBuild'];
+        }
+
+        if (isset($options['afterUserBuild']) && is_callable($options['afterUserBuild'])) {
+            $this->afterUserBuild = $options['afterUserBuild'];
         }
 
         if (isset($options['loginBuilder']) && is_callable($options['loginBuilder'])) {
@@ -226,32 +189,12 @@ class TypicalUserFactory implements UserFactory
             $this->statusBuilder = $options['statusBuilder'];
         }
 
-        if (isset($options['groupRegionBuilder']) && is_callable($options['groupRegionBuilder'])) {
-            $this->groupRegionBuilder = $options['groupRegionBuilder'];
+        if(isset($options['groupsBuilder']) && is_callable($options['groupsBuilder'])) {
+            $this->groupsBuilder = $options['groupsBuilder'];
         }
 
-        if (isset($options['groupCityBuilder']) && is_callable($options['groupCityBuilder'])) {
-            $this->groupCityBuilder = $options['groupCityBuilder'];
-        }
-
-        if (isset($options['groupRoleBuilder']) && is_callable($options['groupRoleBuilder'])) {
-            $this->groupRoleBuilder = $options['groupRoleBuilder'];
-        }
-
-        if (isset($options['groupPositionBuilder']) && is_callable($options['groupPositionBuilder'])) {
-            $this->groupPositionBuilder = $options['groupPositionBuilder'];
-        }
-
-        if (isset($options['groupTeamBuilder']) && is_callable($options['groupTeamBuilder'])) {
-            $this->groupTeamBuilder = $options['groupTeamBuilder'];
-        }
-
-        if (isset($options['groupDepartmentBuilder']) && is_callable($options['groupDepartmentBuilder'])) {
-            $this->groupDepartmentBuilder = $options['groupDepartmentBuilder'];
-        }
-
-        if (isset($options['groupAssignmentBuilder']) && is_callable($options['groupAssignmentBuilder'])) {
-            $this->groupAssignmentBuilder = $options['groupAssignmentBuilder'];
+        if(isset($options['buildForms']) && is_callable($options['buildForms'])) {
+            $this->buildForms = $options['buildForms'];
         }
 
         if (isset($options['forms']) && is_array($options['forms'])) {
@@ -259,7 +202,7 @@ class TypicalUserFactory implements UserFactory
         }
 
         if (isset($options['groupDefaults']) && is_array($options['groupDefaults'])) {
-            $this->groupDefaults = array_merge($this->groupDefaults, $options['groupDefaults']);
+            $this->groupDefaults = $options['groupDefaults'];
         }
 
         if (isset($options['activeStatus'])) {
@@ -294,7 +237,9 @@ class TypicalUserFactory implements UserFactory
             }
 
             $source = $pipelineData->sourceName($userData->key());
-            $data[] = $this->buildUser($source, $userData);
+            $user = $this->buildUser($source, $userData);
+
+            $data[] = $user;
         }
 
         if ($this->afterBuild) {
@@ -364,6 +309,10 @@ class TypicalUserFactory implements UserFactory
             }
 
             $data['forms'] = $forms;
+        }
+
+        if($this->afterUserBuild) {
+            $data = ($this->afterUserBuild)($source, $index, $user, $data);
         }
 
         return UserSyncData::fromData($index, $data);
@@ -504,36 +453,48 @@ class TypicalUserFactory implements UserFactory
     protected function buildGroups(string $source, string $index, array $user): array
     {
         $groups = [];
-        foreach (self::GROUPS as $group) {
-            $groupBuilderMethod = 'group' . ucfirst($group) . 'Builder';
-            $groupValue = $this->$groupBuilderMethod
-                ? $this->$groupBuilderMethod->call($this, $source, $index, $user)
-                : $this->buildGroup('groups.' . $group, $user);
 
-            if(is_string($groupValue) && mb_strlen($groupValue) > 0) {
-                $groups[$group] = $groupValue;
+        if($this->groupsBuilder) {
+            return $this->groupsBuilder->call($this, $source, $index, $user);
+        }
+
+        if(!isset($this->attributes['groups']) || !is_array($this->attributes['groups'])) {
+            return [];
+        }
+
+        foreach ($this->attributes['groups'] as $group) {
+            if(!isset($user[$group])) {
+                continue;
+            }
+
+            $path = $this->trimValue($user[$group]);
+            if(mb_strlen($path) > 0) {
+                $groups[] = ['path' => $path];
             }
         }
 
-        return $groups;
+        if($groups) {
+            return $groups;
+        }
+
+        if($this->useGroupDefaults) {
+            foreach ($this->groupDefaults as $group) {
+                if(is_string($group) && mb_strlen($group) > 0) {
+                    $groups[] = ["path" => $this->trimValue($group)];
+                }
+            }
+            return $groups;
+        }
+
+        return [];
     }
 
-    /**
-     * @param string $type
-     * @param array $user
-     * @return null|string
-     */
-    protected function buildGroup(string $type, array $user): ?string
+    protected function trimValue($group): string
     {
-        $group = $user[$this->attributes[$type]] ?? null;
-        if (is_null($group) || $group === '') {
-            if ($this->useGroupDefaults) {
-                return $this->groupDefaults[$type];
-            }
-
-            return null;
+        if(!is_string($group)) {
+            return '';
         }
 
-        return trim(str_replace(' ', ' ', (string) $group));
+        return trim(str_replace(' ', ' ', $group));
     }
 }
