@@ -22,13 +22,13 @@ class TypicalUserValidationTest extends TestCase
             'phone' => '79275000000',
             'email' => null,
             'groups' => [
-                'region' => 'region',
-                'city' => 'city',
-                'role' => 'role',
-                'position' => 'position',
-                'team' => 'team',
-                'department' => 'department',
-                'assignment' => 'assignment',
+                ['path' => 'region'],
+                ['path' => 'city'],
+                ['path' => 'role'],
+                ['path' => 'position'],
+                ['path' => 'team'],
+                ['path' => 'department'],
+                ['path' => 'assignment'],
             ]
         ];
     }
@@ -160,13 +160,13 @@ class TypicalUserValidationTest extends TestCase
             'phone' => '79275000000',
             'email' => null,
             'groups' => [
-                'region' => '0',
-                'city' => '0',
-                'role' => '0',
-                'position' => '0',
-                'team' => '0',
-                'department' => '0',
-                'assignment' => '0',
+                ['path' => '0'],
+                ['path' => '0'],
+                ['path' => '0'],
+                ['path' => '0'],
+                ['path' => '0'],
+                ['path' => '0'],
+                ['path' => '0'],
             ]
         ]];
         $validator = new TypicalUserValidator();
@@ -241,13 +241,13 @@ class TypicalUserValidationTest extends TestCase
                 'phone' => '79275000000',
                 'email' => null,
                 'groups' => [
-                    'region' => 'region',
-                    'city' => 'city',
-                    'role' => 'role',
-                    'position' => 'position',
-                    'team' => 'team',
-                    'department' => 'department',
-                    'assignment' => 'assignment',
+                    ['path' => 'region'],
+                    ['path' => 'city'],
+                    ['path' => 'role'],
+                    ['path' => 'position'],
+                    ['path' => 'team'],
+                    ['path' => 'department'],
+                    ['path' => 'assignment'],
                 ]
             ]
         ];
@@ -259,13 +259,13 @@ class TypicalUserValidationTest extends TestCase
                 'phone' => '79275000001',
                 'email' => null,
                 'groups' => [
-                    'region' => 'region',
-                    'city' => 'city',
-                    'role' => 'role',
-                    'position' => 'position',
-                    'team' => 'team',
-                    'department' => 'department',
-                    'assignment' => 'assignment',
+                    ['path' => 'region'],
+                    ['path' => 'city'],
+                    ['path' => 'role'],
+                    ['path' => 'position'],
+                    ['path' => 'team'],
+                    ['path' => 'department'],
+                    ['path' => 'assignment'],
                 ]
             ]
         ];
@@ -282,5 +282,63 @@ class TypicalUserValidationTest extends TestCase
         $this->assertArrayHasKey('extra', $error);
         $this->assertEquals('Login already exists', $error['message']);
         $this->assertEquals('source-1', $error['extra']);
+    }
+
+    public function testInvalidGroupKey()
+    {
+        $users = [[
+            'login' => 'test',
+            'first_name' => 'Дмитрий',
+            'last_name' => 'Иванов',
+            'phone' => '79275000000',
+            'email' => null,
+            'groups' => [
+                ['path' => '0'],
+                ['path' => '0'],
+                ['bad-key' => '0'],
+            ]
+        ]];
+        $validator = new TypicalUserValidator();
+        $result = $validator->validate($this->buildPipeline($users));
+        $this->assertCount(0, $result->data());
+        $this->assertCount(1, $result->logs());
+    }
+
+    public function testNotStringPathGroupKey()
+    {
+        $users = [[
+            'login' => 'test',
+            'first_name' => 'Дмитрий',
+            'last_name' => 'Иванов',
+            'phone' => '79275000000',
+            'email' => null,
+            'groups' => [
+                ['path' => 100],
+                ['path' => null],
+                ['path' => '0'],
+            ]
+        ]];
+        $validator = new TypicalUserValidator();
+        $result = $validator->validate($this->buildPipeline($users));
+        $this->assertCount(0, $result->data());
+        $this->assertCount(1, $result->logs());
+    }
+
+    public function testNotIntIdGroupKey()
+    {
+        $users = [[
+            'login' => 'test',
+            'first_name' => 'Дмитрий',
+            'last_name' => 'Иванов',
+            'phone' => '79275000000',
+            'email' => null,
+            'groups' => [
+                ['id' => '100'],
+            ]
+        ]];
+        $validator = new TypicalUserValidator();
+        $result = $validator->validate($this->buildPipeline($users));
+        $this->assertCount(0, $result->data());
+        $this->assertCount(1, $result->logs());
     }
 }

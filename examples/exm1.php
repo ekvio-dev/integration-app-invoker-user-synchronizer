@@ -9,9 +9,12 @@ use Ekvio\Integration\Invoker\UserFactory\TypicalUserFactory;
 use Ekvio\Integration\Invoker\UserSynchronizer;
 use Ekvio\Integration\Invoker\UserValidation\TypicalUserValidator;
 use Ekvio\Integration\Sdk\V2\EqueoClient;
-use Ekvio\Integration\Sdk\V2\Integration\HttpIntegrationResult;
+use Ekvio\Integration\Sdk\V2\Integration\IntegrationResult;
 use Ekvio\Integration\Sdk\V2\User\UserApi;
 use GuzzleHttp\Client;
+use GuzzleHttp\Handler\MockHandler;
+use GuzzleHttp\HandlerStack;
+use GuzzleHttp\Psr7\Response;
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
@@ -137,9 +140,23 @@ class EmailBuilder
     }
 }
 
+class HttpDummyResult implements IntegrationResult
+{
+    public function get(string $url): string
+    {
+        return '{"data": []}';
+    }
+}
+
 $emailBuilder = new EmailBuilder();
 
+$mock = new MockHandler([
+    new Response(200, [], '{"data": {"integration": 1}}'),
+    new Response(200, [], '{"data": {"status": "completed", "file": "link-me"}}')
+]);
+
 $httpClient = new Client([
+    'handler' => HandlerStack::create($mock),
     'headers' => [
         'Accept' => 'application/json',
         'Content-Type' => 'application/json'
@@ -156,14 +173,8 @@ $prior = 'hr.csv';
         'hr2.csv' => new Extractor2('some name'),
         $prior => new Extractor1($prior)
     ]),
-    new TypicalUserFactory([
-        'emailBuilder' => function (string $source, string $index, array $user) use ($emailBuilder) {
-
-            $email = ($emailBuilder)($source, $index, $user);
-            return sprintf('%s@dev.dev', $user[$this->attributes['login']]);
-        }
-    ]),
+    new TypicalUserFactory(),
     new TypicalUserValidator(),
-    new UserApi(new EqueoClient($httpClient, new HttpIntegrationResult(), 'http://nginx', '111222')),
+    new UserApi(new EqueoClient($httpClient, new HttpDummyResult(), 'http://nginx', '111222')),
     new DumpProfiler()
 ))();

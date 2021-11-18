@@ -16,6 +16,7 @@ use Ekvio\Integration\Invoker\UserSyncPipelineData;
 class TypicalUserValidator implements UserValidator
 {
     protected const GROUPS = ['region', 'city', 'role', 'position', 'team', 'department', 'assignment'];
+    protected const GROUP_KEYS = ['path', 'id'];
     /**
      * @var UserValidationCollector
      */
@@ -355,32 +356,45 @@ class TypicalUserValidator implements UserValidator
     {
         $isGroupValid = true;
         $login = $this->getLogin($user);
-        foreach (self::GROUPS as $requiredGroup) {
-            if(!array_key_exists($requiredGroup, $user['groups'])) {
-                continue;
-            }
+        $groups = $user['groups'] ?? [];
 
-            $group = $user['groups'][$requiredGroup] ?? null;
+        if(!$groups) {
+            return true;
+        }
 
-            if(is_null($group)) {
-                $this->validationCollector->addError(
-                    $index,
-                    $login,
-                    'groups',
-                    sprintf('Group %s is required and not blank', $requiredGroup)
-                );
+        if(!is_array($groups)) {
+            $this->validationCollector->addError($index, $login, 'groups', 'Groups must be array');
+            return false;
+        }
+
+        foreach ($groups as $group) {
+            $key = key($group);
+            $value = $group[$key];
+
+            if(!in_array($key, self::GROUP_KEYS, true)) {
+                $this->validationCollector->addError($index, $login, 'groups', 'Group keys must be path or id');
                 $isGroupValid = false;
                 continue;
             }
 
-            if (mb_strlen($group) === 0) {
-                $this->validationCollector->addError(
-                    $index,
-                    $login,
-                    'groups',
-                    sprintf('Group %s is required and not blank', $requiredGroup)
-                );
-                $isGroupValid = false;
+            if($key === 'path') {
+                if(!is_string($value)) {
+                    $this->validationCollector->addError($index, $login, 'groups', 'Group value must be string');
+                    $isGroupValid = false;
+                    continue;
+                }
+
+                if(mb_strlen(trim($value)) === 0) {
+                    $this->validationCollector->addError($index, $login, 'groups', 'Group value is empty');
+                    $isGroupValid = false;
+                }
+            }
+
+            if($key === 'id') {
+                if(!is_int($value) || $value <= 0) {
+                    $this->validationCollector->addError($index, $login, 'groups', 'Group value must be positive integer');
+                    $isGroupValid = false;
+                }
             }
         }
 
