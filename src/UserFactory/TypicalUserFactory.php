@@ -29,7 +29,14 @@ class TypicalUserFactory implements UserFactory
         'password' => 'PASSWORD',
         'chief_email' => 'MANAGER_EMAIL',
         'status' => 'USR_UDF_USER_FIRED',
-        'groups' => ['REGION_NAME', 'ROLE', 'POSITION_NAME', 'TEAM_NAME', 'DEPARTAMENT_NAME', 'ASSIGNMENT_NAME']
+        'groups' => [
+            'region' => 'REGION_NAME',
+            'role' => 'ROLE',
+            'position' => 'POSITION_NAME',
+            'team' => 'TEAM_NAME',
+            'department' => 'DEPARTAMENT_NAME',
+            'assignment' => 'ASSIGNMENT_NAME'
+        ]
     ];
 
     private $groupDefaults = [];
@@ -462,14 +469,14 @@ class TypicalUserFactory implements UserFactory
             return [];
         }
 
-        foreach ($this->attributes['groups'] as $group) {
+        foreach ($this->attributes['groups'] as $key => $group) {
             if(!isset($user[$group])) {
                 continue;
             }
 
             $path = $this->trimValue($user[$group]);
             if(mb_strlen($path) > 0) {
-                $groups[] = ['path' => $path];
+                $groups[$key] = ['path' => $path];
             }
         }
 
@@ -478,9 +485,9 @@ class TypicalUserFactory implements UserFactory
         }
 
         if($this->useGroupDefaults) {
-            foreach ($this->groupDefaults as $group) {
+            foreach ($this->groupDefaults as $key => $group) {
                 if(is_string($group) && mb_strlen($group) > 0) {
-                    $groups[] = ["path" => $this->trimValue($group)];
+                    $groups[$key] = ["path" => $this->trimValue($group)];
                 }
             }
             return $groups;

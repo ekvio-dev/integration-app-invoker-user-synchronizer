@@ -138,12 +138,12 @@ class TypicalUserFactoryTest extends TestCase
             'chief_email' => 'manager@test.dev',
             'status' => 'active',
             'groups' => [
-                ['path' => 'region'],
-                ['path' => 'role'],
-                ['path' => 'position'],
-                ['path' => 'team'],
-                ['path' => 'department'],
-                ['path' => 'assignment'],
+                'region' => ['path' => 'region'],
+                'role' => ['path' => 'role'],
+                'position' => ['path' => 'position'],
+                'team' => ['path' => 'team'],
+                'department' => ['path' => 'department'],
+                'assignment' => ['path' => 'assignment'],
             ]
         ], $user->data());
     }
@@ -405,11 +405,11 @@ class TypicalUserFactoryTest extends TestCase
             'chief_email' => 'manager@test.dev',
             'status' => 'active',
             'groups' => [
-                ['path' => '0'],
-                ['path' => '0'],
-                ['path' => '0'],
-                ['path' => '0'],
-                ['path' => 'assignment'],
+                'role' => ['path' => '0'],
+                'position' => ['path' => '0'],
+                'team' => ['path' => '0'],
+                'department' => ['path' => '0'],
+                'assignment' => ['path' => 'assignment'],
             ]
         ], $user->data());
     }

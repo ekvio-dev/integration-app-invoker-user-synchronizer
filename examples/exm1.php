@@ -144,7 +144,7 @@ class HttpDummyResult implements IntegrationResult
 {
     public function get(string $url): string
     {
-        return '{"data": []}';
+        return '{"data": [{"index":0,"login":"testru","status":"error","errors":[{"code":1007,"field":"groups","message":"Group path invalid format. Group index: root_1"}]}]}';
     }
 }
 
