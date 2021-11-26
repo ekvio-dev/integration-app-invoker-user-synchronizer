@@ -10,7 +10,7 @@ use Ekvio\Integration\Contracts\Profiler;
 use Ekvio\Integration\Contracts\User\UserPipelineData;
 use Ekvio\Integration\Invoker\UserFactory\UserFactory;
 use Ekvio\Integration\Invoker\UserValidation\UserValidator;
-use Ekvio\Integration\Sdk\V2\User\User;
+use Ekvio\Integration\Sdk\V3\User\User;
 
 /**
  * Class UserSynchronizer
