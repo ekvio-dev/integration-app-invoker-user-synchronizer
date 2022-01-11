@@ -3,9 +3,9 @@ declare(strict_types=1);
 
 namespace Ekvio\Integration\Invoker\Tests\Integration;
 
-use Ekvio\Integration\Sdk\V2\User\User;
-use Ekvio\Integration\Sdk\V2\User\UserDeleteCriteria;
-use Ekvio\Integration\Sdk\V2\User\UserSearchCriteria;
+use Ekvio\Integration\Sdk\V3\User\User;
+use Ekvio\Integration\Sdk\V3\User\UserDeleteCriteria;
+use Ekvio\Integration\Sdk\V3\User\UserSearchCriteria;
 
 /**
  * Class UserApiDummy

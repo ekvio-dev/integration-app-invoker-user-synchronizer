@@ -24,13 +24,14 @@ class ExtractorPriorityCollector implements Collector
      * @var Extractor[]
      */
     private $extractors;
+    private $options = [];
 
     /**
      * ExtractorPriorityCollector constructor.
      * @param string $priorExtractorName
      * @param Extractor[] $extractors
      */
-    public function __construct(string $priorExtractorName, array $extractors)
+    public function __construct(string $priorExtractorName, array $extractors, array $options = [])
     {
         Assert::notEmpty($priorExtractorName, 'Prior extractor name required');
         Assert::notEmpty($extractors, 'Extractors required');
@@ -42,6 +43,7 @@ class ExtractorPriorityCollector implements Collector
 
         $this->priorExtractorName = $priorExtractorName;
         $this->extractors = $extractors;
+        $this->options = $options;
     }
 
     /**
@@ -51,7 +53,14 @@ class ExtractorPriorityCollector implements Collector
     public function collect(array $options = [])
     {
         $sorted = [];
+        $exclude = (array) $this->options['exclude'] ?? [];
+
         foreach ($this->extractors as $name => $extractor) {
+
+            if(in_array($name, $exclude, true)) {
+                continue;
+            }
+
             if ($name === $this->priorExtractorName) {
                 $sorted[$name] = $extractor;
             }
@@ -65,6 +74,11 @@ class ExtractorPriorityCollector implements Collector
             if ($name === $this->priorExtractorName) {
                 continue;
             }
+
+            if(in_array($name, $exclude, true)) {
+                continue;
+            }
+
             $sorted[$name] = $extractor;
         }
 
