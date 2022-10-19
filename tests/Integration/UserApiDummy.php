@@ -27,7 +27,7 @@ class UserApiDummy implements User
                 ]
             ],
             [
-                "index" => 1,
+                "index" => 0,
                 "login" => "test",
                 "status" => "created",
                 "data" => [

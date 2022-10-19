@@ -11,10 +11,11 @@
   "minimum-stability": "stable",
   "license": "MIT",
   "require": {
+    "php": "^8",
     "ext-json": "*",
     "ext-mbstring": "*",
-    "ekvio-dev/integration-app-contracts": "^3",
-    "ekvio-dev/integration-php-sdk": "^2"
+    "ekvio-dev/integration-app-contracts": "^4",
+    "ekvio-dev/integration-php-sdk": "^3"
   },
   "autoload": {
     "psr-4": {
@@ -31,6 +32,7 @@
     }
   },
   "scripts": {
+    "test": "./vendor/bin/phpunit",
     "cs-check": "phpcs",
     "cs-fix": "phpcbf"
   }

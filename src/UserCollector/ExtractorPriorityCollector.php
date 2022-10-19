@@ -53,7 +53,9 @@ class ExtractorPriorityCollector implements Collector
     public function collect(array $options = [])
     {
         $sorted = [];
-        $exclude = (array) $this->options['exclude'] ?? [];
+        $exclude = $this->options['exclude'] ?? [];
+
+        Assert::isArray($exclude, 'Option exclude must be array');
 
         foreach ($this->extractors as $name => $extractor) {
 
