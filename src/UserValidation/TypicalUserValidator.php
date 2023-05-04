@@ -276,8 +276,7 @@ class TypicalUserValidator implements UserValidator
         $login = $this->getLogin($user);
 
         if (empty($user[$key])) {
-            $this->validationCollector->addError($index, $login, $key, 'Phone required');
-            return false;
+            return true;
         }
 
         $phone = $user[$key];
@@ -310,11 +309,6 @@ class TypicalUserValidator implements UserValidator
     {
         $key = 'email';
         $login = $this->getLogin($user);
-
-        if (!array_key_exists($key, $user)) {
-            $this->validationCollector->addError($index, $login, $key, 'Email required');
-            return false;
-        }
 
         //email is optional
         if (empty($user[$key])) {

@@ -93,15 +93,15 @@ class TypicalUserValidationTest extends TestCase
         $this->assertCount(1, $result->logs());
     }
 
-    public function testFalsePhoneValidation()
+    public function testPhoneValidation()
     {
         $validator = new TypicalUserValidator();
         $user = $this->user();
-        $user['phone'] = null;
+        unset($user['phone']);
 
         $result = $validator->validate($this->buildPipeline([$user]));
-        $this->assertCount(0, $result->data());
-        $this->assertCount(1, $result->logs());
+        $this->assertCount(1, $result->data());
+        $this->assertCount(0, $result->logs());
 
         $user['phone'] = 'n79275200000';
         $result = $validator->validate($this->buildPipeline([$user]));
@@ -118,10 +118,15 @@ class TypicalUserValidationTest extends TestCase
         $this->assertCount(1, $result->logs());
     }
 
-    public function testFalseEmailValidation()
+    public function testEmailValidation()
     {
         $validator = new TypicalUserValidator();
         $user = $this->user();
+
+        unset($user['email']);
+        $result = $validator->validate($this->buildPipeline([$user]));
+        $this->assertCount(1, $result->data());
+        $this->assertCount(0, $result->logs());
 
         $user['email'] = 'not-valid-email';
         $result = $validator->validate($this->buildPipeline([$user]));
