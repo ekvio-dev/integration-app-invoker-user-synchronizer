@@ -83,10 +83,6 @@ class TypicalUserFactoryTest extends TestCase
             'login' => null,
             'first_name' => null,
             'last_name' => null,
-            'email' => null,
-            'phone' => null,
-            'verified_email' => false,
-            'verified_phone' => false,
             'chief_email' => null,
             'status' => 'blocked',
             'groups' => []
@@ -107,10 +103,6 @@ class TypicalUserFactoryTest extends TestCase
             'login' => null,
             'first_name' => null,
             'last_name' => null,
-            'email' => null,
-            'phone' => null,
-            'verified_email' => false,
-            'verified_phone' => false,
             'chief_email' => null,
             'status' => 'blocked',
             'groups' => [
@@ -133,8 +125,6 @@ class TypicalUserFactoryTest extends TestCase
             'last_name' => 'ivanov',
             'phone' => '79275000000',
             'email' => 'test@test.dev',
-            'verified_email' => true,
-            'verified_phone' => true,
             'chief_email' => 'manager@test.dev',
             'status' => 'active',
             'groups' => [
@@ -232,10 +222,6 @@ class TypicalUserFactoryTest extends TestCase
             'login' => 'my.login',
             'first_name' => 'my.first_name',
             'last_name' => 'my.last_name',
-            'phone' => null,
-            'email' => null,
-            'verified_email' => true,
-            'verified_phone' => true,
             'chief_email' => null,
             'status' => 'blocked',
             'groups' => [
@@ -288,8 +274,6 @@ class TypicalUserFactoryTest extends TestCase
             'last_name' => 'ivanov',
             'phone' => '79275000000',
             'email' => 'test@test.dev',
-            'verified_email' => true,
-            'verified_phone' => true,
             'chief_email' => 'manager@test.dev',
             'status' => 'active',
             'groups' => []
@@ -326,8 +310,6 @@ class TypicalUserFactoryTest extends TestCase
             'last_name' => 'ivanov',
             'phone' => '79275000000',
             'email' => 'test@test.dev',
-            'verified_email' => true,
-            'verified_phone' => true,
             'chief_email' => 'manager@test.dev',
             'status' => 'active',
             'groups' => []
@@ -400,8 +382,6 @@ class TypicalUserFactoryTest extends TestCase
             'last_name' => 'ivanov',
             'phone' => '79275000000',
             'email' => 'test@test.dev',
-            'verified_email' => true,
-            'verified_phone' => true,
             'chief_email' => 'manager@test.dev',
             'status' => 'active',
             'groups' => [
@@ -434,8 +414,6 @@ class TypicalUserFactoryTest extends TestCase
             'last_name' => 'ivanov',
             'phone' => '79275000000',
             'email' => 'test@test.dev',
-            'verified_email' => true,
-            'verified_phone' => true,
             'chief_email' => 'manager@test.dev',
             'status' => 'active',
             'groups' => [],
