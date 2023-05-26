@@ -50,6 +50,22 @@ class UserMemoryExtractor implements Extractor
                 'DEPARTAMENT_NAME' => 'department',
                 'ASSIGNMENT_NAME' => 'assignment',
             ],
+            [
+                'USR_LOGIN' => 'test3',
+                'USR_FIRST_NAME' => 'Сидоров',
+                'USR_LAST_NAME' => 'Антон',
+                'USR_MOBILE' => '89275000000',
+                'USR_EMAIL' => 'test@test.dev',
+                'MANAGER_EMAIL' => 'manager@test.dev',
+                'USR_UDF_USER_FIRED' => '1',
+                'REGION_NAME' => 'region',
+                'CITY_NAME' => 'city',
+                'ROLE' => 'role',
+                'POSITION_NAME' => 'position',
+                'TEAM_NAME' => 'team',
+                'DEPARTAMENT_NAME' => 'department',
+                'ASSIGNMENT_NAME' => 'assignment',
+            ],
         ];
     }
 
