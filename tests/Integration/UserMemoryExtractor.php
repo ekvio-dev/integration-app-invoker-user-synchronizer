@@ -11,13 +11,17 @@ use Ekvio\Integration\Contracts\Extractor;
  */
 class UserMemoryExtractor implements Extractor
 {
-    /**
-     * @param array $options
-     * @return array[]
-     */
+
+    private $users = [];
+
+    public function __construct(array $users = [])
+    {
+        $this->users = $users;
+    }
     public function extract(array $options = []): array
     {
-        return [
+        return count($this->users) > 0 ? $this->users :
+            [
             [
                 'USR_LOGIN' => 'test',
                 'USR_FIRST_NAME' => 'Иван',

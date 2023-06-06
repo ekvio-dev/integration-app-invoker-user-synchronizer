@@ -96,16 +96,21 @@ class UserSynchronizer implements Invoker
             }
 
             $syncResultsBlocked = [];
+            $syncResultsActive = [];
             if (count($blockedUsers) > 0) {
                 $this->profiler->profile(sprintf('Sync blocked %s users...', count($blockedUsers)));
-                $syncResultsBlocked = $this->equeoUserApi->sync($blockedUsers, $config);
+
+                $blockSyncConfig = $config;
+                $blockSyncConfig['partial_sync'] = true;
+                $syncResultsBlocked = $this->equeoUserApi->sync($blockedUsers, $blockSyncConfig);
                 $this->profiler->profile(sprintf('Get %s logs from Equeo...', count($syncResultsBlocked)));
             }
 
-            $this->profiler->profile(sprintf('Sync active %s users...', count($activeUsers)));
-            $syncResultsActive = $this->equeoUserApi->sync($activeUsers, $config);
-            $this->profiler->profile(sprintf('Get %s logs from Equeo...', count($syncResultsActive)));
-
+            if (count($activeUsers)) {
+                $this->profiler->profile(sprintf('Sync active %s users...', count($activeUsers)));
+                $syncResultsActive = $this->equeoUserApi->sync($activeUsers, $config);
+                $this->profiler->profile(sprintf('Get %s logs from Equeo...', count($syncResultsActive)));
+            }
 
             $syncResults = array_merge($syncResultsBlocked, $syncResultsActive);
 

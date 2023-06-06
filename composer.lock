@@ -48,16 +48,16 @@
         },
         {
             "name": "ekvio-dev/integration-php-sdk",
-            "version": "3.0.0",
+            "version": "3.1.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ekvio-dev/integration-php-sdk.git",
-                "reference": "22c35cd20a53016ca47720f2589a3c620d56901a"
+                "reference": "ceb61d544b5dd7bb7640f223a1614828704233ee"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ekvio-dev/integration-php-sdk/zipball/22c35cd20a53016ca47720f2589a3c620d56901a",
-                "reference": "22c35cd20a53016ca47720f2589a3c620d56901a",
+                "url": "https://api.github.com/repos/ekvio-dev/integration-php-sdk/zipball/ceb61d544b5dd7bb7640f223a1614828704233ee",
+                "reference": "ceb61d544b5dd7bb7640f223a1614828704233ee",
                 "shasum": ""
             },
             "require": {
@@ -91,9 +91,9 @@
             "description": "Ekvio integration PHP SDK",
             "support": {
                 "issues": "https://github.com/ekvio-dev/integration-php-sdk/issues",
-                "source": "https://github.com/ekvio-dev/integration-php-sdk/tree/3.0.0"
+                "source": "https://github.com/ekvio-dev/integration-php-sdk/tree/3.1.3"
             },
-            "time": "2022-10-18T13:15:30+00:00"
+            "time": "2023-06-05T12:20:20+00:00"
         },
         {
             "name": "guzzlehttp/guzzle",
