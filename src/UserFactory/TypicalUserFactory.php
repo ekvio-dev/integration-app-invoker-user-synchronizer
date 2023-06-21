@@ -99,14 +99,6 @@ class TypicalUserFactory implements UserFactory
     /**
      * @var Closure
      */
-    private $verifiedEmailBuilder;
-    /**
-     * @var Closure
-     */
-    private $verifiedPhoneBuilder;
-    /**
-     * @var Closure
-     */
     private $chiefEmailBuilder;
     /**
      * @var Closure
@@ -178,14 +170,6 @@ class TypicalUserFactory implements UserFactory
 
         if (isset($options['passwordBuilder']) && is_callable($options['passwordBuilder'])) {
             $this->passwordBuilder = $options['passwordBuilder'];
-        }
-
-        if (isset($options['verifiedEmailBuilder']) && is_callable($options['verifiedEmailBuilder'])) {
-            $this->verifiedEmailBuilder = $options['verifiedEmailBuilder'];
-        }
-
-        if (isset($options['verifiedPhoneBuilder']) && is_callable($options['verifiedPhoneBuilder'])) {
-            $this->verifiedPhoneBuilder = $options['verifiedPhoneBuilder'];
         }
 
         if (isset($options['chiefEmailBuilder']) && is_callable($options['chiefEmailBuilder'])) {
@@ -279,14 +263,6 @@ class TypicalUserFactory implements UserFactory
             'last_name' => $this->lastNameBuilder
                 ? $this->lastNameBuilder->call($this, $source, $index, $user)
                 : $this->buildLastName($user),
-            'email' => $email,
-            'phone' => $phone,
-            'verified_email' => $this->verifiedEmailBuilder
-                ? (bool) $this->verifiedEmailBuilder->call($this, $source, $index, $user)
-                : $this->buildVerifiedEmail($email),
-            'verified_phone' => $this->verifiedPhoneBuilder
-                ? (bool) $this->verifiedPhoneBuilder->call($this, $source, $index, $user)
-                : $this->buildVerifiedPhone($phone),
             'chief_email' => $this->chiefEmailBuilder
                 ? $this->chiefEmailBuilder->call($this, $source, $index, $user)
                 : $this->buildChiefEmail($user),
@@ -294,6 +270,14 @@ class TypicalUserFactory implements UserFactory
                 ? $this->statusBuilder->call($this, $source, $index, $user)
                 : $this->buildStatus($user)
         ];
+
+        if ($email) {
+            $data['email'] = $email;
+        }
+
+        if ($phone) {
+            $data['phone'] = $phone;
+        }
 
         $password = $this->passwordBuilder
             ? $this->passwordBuilder->call($this, $source, $index, $user)

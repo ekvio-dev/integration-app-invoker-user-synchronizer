@@ -53,7 +53,7 @@ class ExtractorPriorityCollector implements Collector
     public function collect(array $options = [])
     {
         $sorted = [];
-        $exclude = (array) $this->options['exclude'] ?? [];
+        $exclude = (array) ($this->options['exclude'] ?? []);
 
         foreach ($this->extractors as $name => $extractor) {
 
