@@ -250,8 +250,8 @@ class TypicalUserFactory implements UserFactory
         $index = $userData->key();
         $user = $userData->data();
 
-        $email = $this->emailBuilder ? $this->emailBuilder->call($this, $source, $index, $user) : $this->buildEmail($user);
-        $phone = $this->phoneBuilder ? $this->phoneBuilder->call($this, $source, $index, $user) : $this->buildPhone($user);
+        $email = (string)($this->emailBuilder ? $this->emailBuilder->call($this, $source, $index, $user) : $this->buildEmail($user));
+        $phone = (string) ($this->phoneBuilder ? $this->phoneBuilder->call($this, $source, $index, $user) : $this->buildPhone($user));
 
         $data = [
             'login' => $this->loginBuilder
@@ -271,11 +271,11 @@ class TypicalUserFactory implements UserFactory
                 : $this->buildStatus($user)
         ];
 
-        if ($email) {
+        if ($email && mb_strlen(trim($email)) !== 0) {
             $data['email'] = $email;
         }
 
-        if ($phone) {
+        if ($phone && mb_strlen(trim($phone)) !== 0) {
             $data['phone'] = $phone;
         }
 
@@ -359,7 +359,7 @@ class TypicalUserFactory implements UserFactory
     {
         $email = $user[$this->attributes['email']] ?? null;
         if ($email) {
-            return trim($email);
+            return trim((string) $email);
         }
 
         return null;
