@@ -113,6 +113,63 @@ class TypicalUserFactoryTest extends TestCase
         ], $user->data());
     }
 
+    public function testPhoneEmailWithSpaces()
+    {
+        $fake = $this->user();
+        $fake['USR_MOBILE'] = '   ';
+        $fake['USR_EMAIL'] = '   ';
+        $factory = (new TypicalUserFactory())->build($this->buildPipeline([$fake]));
+        /** @var UserSyncData $user */
+        $user = $factory->data()[0];
+
+        $this->assertEquals([
+            'login' => 'test',
+            'first_name' => 'ivan',
+            'last_name' => 'ivanov',
+            'chief_email' => 'manager@test.dev',
+            'status' => 'active',
+            'groups' => [
+                'region' => ['path' => 'region'],
+                'role' => ['path' => 'role'],
+                'position' => ['path' => 'position'],
+                'team' => ['path' => 'team'],
+                'department' => ['path' => 'department'],
+                'assignment' => ['path' => 'assignment'],
+            ]
+        ], $user->data());
+    }
+
+    public function testPhoneNotStringValue()
+    {
+        $fake = $this->user();
+        $fake['USR_EMAIL'] = 123;
+        $factory = (new TypicalUserFactory([
+            'phoneBuilder' => function() {
+                return 1000;
+            }
+        ]))->build($this->buildPipeline([$fake]));
+        /** @var UserSyncData $user */
+        $user = $factory->data()[0];
+
+        $this->assertEquals([
+            'login' => 'test',
+            'first_name' => 'ivan',
+            'last_name' => 'ivanov',
+            'chief_email' => 'manager@test.dev',
+            'status' => 'active',
+            'email' => '123',
+            'phone' => '1000',
+            'groups' => [
+                'region' => ['path' => 'region'],
+                'role' => ['path' => 'role'],
+                'position' => ['path' => 'position'],
+                'team' => ['path' => 'team'],
+                'department' => ['path' => 'department'],
+                'assignment' => ['path' => 'assignment'],
+            ]
+        ], $user->data());
+    }
+
     public function testBuildUserFromMap()
     {
         $factory = (new TypicalUserFactory())->build($this->buildPipeline([$this->user()]));
